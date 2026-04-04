@@ -4,9 +4,12 @@ import Navbar from "./layout/Navbar.jsx";
 import Footer from "./layout/Footer.jsx";
 import Home from "./pages/Home.jsx";
 import LoginModal from './components/LoginModal.jsx';
+import RegisterModal from './components/RegisterModal.jsx'; // <-- Agregamos el nuevo componente
 
 function App() {
+  // Manejamos el estado de ambos modales de forma independiente
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">
@@ -27,13 +30,38 @@ function App() {
 
       {/* --- Contenido Supremo (Encima del fondo) --- */}
       <div className="relative z-10">
-        <Navbar onLoginClick={() => setIsLoginOpen(true)} />
+        <Navbar 
+          onLoginClick={() => setIsLoginOpen(true)} 
+          onRegisterClick={() => setIsRegisterOpen(true)} // <-- Conectamos el botón del Navbar
+        />
         <main>
-          <Home />
+          {/* El botón CTA final del Home dice "Crear cuenta gratis", así que debe abrir el Registro */}
+          <Home onLoginClick={() => setIsRegisterOpen(true)} />
         </main>
         <Footer />
       </div>
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+
+      {/* --- Modales --- */}
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+        // Opcional: Si en el futuro agregas esta prop a LoginModal para ir al registro
+        onSwitchToRegister={() => {
+          setIsLoginOpen(false);
+          setIsRegisterOpen(true);
+        }}
+      />
+
+      <RegisterModal 
+        isOpen={isRegisterOpen} 
+        onClose={() => setIsRegisterOpen(false)} 
+        // Permite intercambiar al login sin cerrar los modales abruptamente
+        onSwitchToLogin={() => {
+          setIsRegisterOpen(false);
+          setIsLoginOpen(true);
+        }}
+      />
+      
     </div>
   );
 }

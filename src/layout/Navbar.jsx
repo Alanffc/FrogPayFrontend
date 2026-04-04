@@ -3,7 +3,8 @@ import { Menu, X } from 'lucide-react';
 import MagneticButton from '../components/MagneticButton.jsx';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 
-export default function Navbar({ onLoginClick }) {
+// Agregamos onRegisterClick a las props
+export default function Navbar({ onLoginClick, onRegisterClick }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -15,7 +16,6 @@ export default function Navbar({ onLoginClick }) {
           <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-transparent shadow-[0_0_18px_rgba(0,0,0,0.25)] overflow-hidden transition-transform group-hover:scale-105">
             <img src={FrogPayIsotype} alt="FrogPay" className="w-full h-full object-contain" />
           </div>
-          {/* Aquí aplicamos el cambio de color a "Pay" */}
           <span className="text-xl font-bold tracking-tight">
             <span className="text-white">Frog</span>
             <span className="text-[#e6ff2a]">Pay</span>
@@ -30,7 +30,7 @@ export default function Navbar({ onLoginClick }) {
         </div>
         
         {/* Acciones Derecha */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Botón Hamburguesa Móvil */}
           <button
             type="button"
@@ -41,7 +41,15 @@ export default function Navbar({ onLoginClick }) {
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          {/* Login con Animación Sutil y Elegante */}
+          {/* Botón Nuevo: Regístrate (Bordeado) */}
+          <MagneticButton 
+            onClick={onRegisterClick}
+            className="hidden sm:inline-flex px-5 py-2.5 rounded-2xl text-[15px] font-bold border border-[#e6ff2a] text-[#e6ff2a] hover:bg-[#e6ff2a]/10 transition-colors"
+          >
+            Regístrate
+          </MagneticButton>
+
+          {/* Botón Original: Login (Sólido) */}
           <MagneticButton 
             onClick={onLoginClick}
             className="px-6 py-2.5 rounded-2xl text-[15px] font-bold bg-[#e6ff2a] text-[#04181C] shadow-[0_4px_15px_rgba(230,255,42,0.2)]"
@@ -58,6 +66,8 @@ export default function Navbar({ onLoginClick }) {
             <a href="#" className="rounded-2xl px-4 py-3 transition hover:bg-white/10">Producto</a>
             <a href="#" className="rounded-2xl px-4 py-3 transition hover:bg-white/10">Desarrolladores</a>
             <a href="#" className="rounded-2xl px-4 py-3 transition hover:bg-white/10">Precios</a>
+            <hr className="border-white/10 my-2" />
+            <a href="#" onClick={onRegisterClick} className="rounded-2xl px-4 py-3 text-[#e6ff2a] transition hover:bg-white/10">Crear cuenta gratis</a>
           </div>
         </div>
       )}
