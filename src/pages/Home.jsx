@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, Zap, Globe, ChevronRight, 
   Terminal, Lock, Server, CheckCircle2, 
@@ -193,6 +194,7 @@ const payment = await frogpay.charges.create({
 export default function Home({ onLoginClick }) {
   // --- CORRECCIÓN: Volvemos a colocar el estado principal aquí arriba ---
   const [activeFeature, setActiveFeature] = useState(0);
+  const navigate = useNavigate();
 
   return (
     <div className="relative w-full overflow-hidden">
@@ -225,6 +227,7 @@ export default function Home({ onLoginClick }) {
           
           <div className="flex flex-col sm:flex-row items-center gap-6 w-full justify-center animate-fade-in-up" style={{ animationDelay: '400ms' }}>
               <MagneticButton 
+                onClick={() => navigate('/register')}
                 className="px-10 py-4 rounded-full bg-[#e6ff2a] text-[#04181C] font-bold text-lg shadow-[0_10px_20px_-5px_rgba(230,255,42,0.3)] hover:shadow-[0_20px_35px_-10px_rgba(230,255,42,0.4)]"
               >
                 Obtener API Key 
@@ -443,6 +446,7 @@ export default function Home({ onLoginClick }) {
                   </ul>
 
                   <MagneticButton 
+                    onClick={() => navigate('/register')}
                     className={`w-full py-4 rounded-2xl text-center font-bold text-lg transition-all duration-300 ${
                       isPro 
                       ? 'bg-[#e6ff2a] text-[#04181C] shadow-[0_10px_30px_-5px_rgba(230,255,42,0.3)] group-hover:shadow-[0_20px_45px_rgba(230,255,42,0.4)] group-hover:scale-[1.03]' 
@@ -475,7 +479,7 @@ export default function Home({ onLoginClick }) {
           </p>
           
           <MagneticButton 
-            onClick={onLoginClick}
+            onClick={() => navigate('/register')}
             className="px-12 py-5 rounded-full bg-[#e6ff2a] text-[#04181C] font-black text-2xl shadow-[0_20px_50px_-10px_rgba(230,255,42,0.4)] hover:shadow-[0_25px_60px_-10px_rgba(230,255,42,0.6)] group transform hover:scale-[1.05] transition-all duration-300"
           >
             <span className="flex items-center gap-3">

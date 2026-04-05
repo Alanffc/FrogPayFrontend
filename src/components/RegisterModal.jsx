@@ -101,7 +101,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
       <div className="relative w-full max-w-5xl rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/70 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-fade-in-up" style={{ animationDuration: '0.3s' }}>
         
         <button
@@ -121,12 +121,12 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
           </div>
 
           {/* Lado Derecho - Formulario de Registro */}
-          <div className="relative z-10 p-8 lg:p-14 flex flex-col justify-between gap-6">
+          <div className="relative z-10 p-6 sm:p-8 lg:p-14 flex flex-col justify-between gap-6">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[#b7f758]">
                 Empieza Gratis
               </span>
-              <h2 className="mt-5 text-4xl font-black tracking-tight text-white leading-tight">
+              <h2 className="mt-5 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
                 Registra tu empresa en FrogPay.
               </h2>
             </div>
@@ -142,7 +142,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
                     value={companyName}
                     onChange={(e) => { setCompanyName(e.target.value); setErrors(prev => ({ ...prev, companyName: '' })); }}
                     placeholder="Mi Tienda S.R.L."
-                    className={`w-full rounded-2xl border ${errors.companyName ? 'border-red-500 bg-red-500/10 text-red-50' : 'border-white/10 bg-white/5 text-white'} px-5 py-3 outline-none transition focus:border-[#e6ff2a]/80`}
+                    className={`w-full rounded-2xl border ${errors.companyName ? 'border-red-500 bg-red-500/10 text-red-50' : 'border-white/10 bg-white/5 text-white'} px-4 sm:px-5 py-3 outline-none transition focus:border-[#e6ff2a]/80`}
                   />
                   <CustomGlassTooltip message={errors.companyName} />
                 </div>
@@ -157,7 +157,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: '' })); }}
                     placeholder="pagos@mitienda.com"
-                    className={`w-full rounded-2xl border ${errors.email ? 'border-red-500 bg-red-500/10 text-red-50' : 'border-white/10 bg-white/5 text-white'} px-5 py-3 outline-none transition focus:border-[#e6ff2a]/80`}
+                    className={`w-full rounded-2xl border ${errors.email ? 'border-red-500 bg-red-500/10 text-red-50' : 'border-white/10 bg-white/5 text-white'} px-4 sm:px-5 py-3 outline-none transition focus:border-[#e6ff2a]/80`}
                   />
                   <CustomGlassTooltip message={errors.email} />
                 </div>
@@ -172,12 +172,12 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: '' })); }}
                     placeholder="Crea una contraseña segura"
-                    className={`w-full rounded-2xl border ${errors.password ? 'border-red-500 bg-red-500/10 text-red-50' : 'border-white/10 bg-white/5 text-white'} px-5 py-3 pr-12 outline-none transition focus:border-[#e6ff2a]/80`}
+                    className={`w-full rounded-2xl border ${errors.password ? 'border-red-500 bg-red-500/10 text-red-50' : 'border-white/10 bg-white/5 text-white'} px-4 sm:px-5 py-3 pr-12 outline-none transition focus:border-[#e6ff2a]/80`}
                   />
                   <button
                     type="button"
                     onClick={() => setPasswordVisible(!passwordVisible)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#e6ff2a] hover:text-[#b7f758]"
+                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-[#e6ff2a] hover:text-[#b7f758]"
                   >
                     {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -236,7 +236,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
                 {/* --- BOTÓN MEJORADO: Más padding (px-10 py-4), mejor transición --- */}
                 <MagneticButton 
                   disabled={!acceptTerms}
-                  className={`group inline-flex w-full sm:w-auto items-center justify-center gap-3 rounded-full px-10 py-4 text-[15px] font-bold transition-all duration-300 whitespace-nowrap
+                  className={`group inline-flex w-full sm:w-auto items-center justify-center gap-3 rounded-full px-8 sm:px-10 py-3 sm:py-4 text-sm sm:text-[15px] font-bold transition-all duration-300 whitespace-nowrap
                     ${acceptTerms 
                       ? 'bg-[#e6ff2a] text-[#04181C] shadow-[0_10px_30px_rgba(230,255,42,0.2)] hover:shadow-[0_15px_40px_rgba(230,255,42,0.35)] hover:scale-[1.02]' 
                       : 'bg-white/10 text-gray-500 cursor-not-allowed border border-white/5'}
