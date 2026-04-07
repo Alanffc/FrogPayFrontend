@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import MagneticButton from './MagneticButton.jsx';
 import LiquidGradient from '../assets/LiquidGradientV2.png';
 import { X, Eye, EyeOff, ArrowRight, AlertTriangle, Check, XCircle } from 'lucide-react';
-
+import { registerTenant } from '../services/auth.service';
 // --- Componente Interno para el Tooltip Glass ---
 const CustomGlassTooltip = ({ message }) => {
   if (!message) return null;
@@ -60,46 +60,52 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    let newErrors = { companyName: '', email: '', password: '' };
-    let hasError = false;
+ const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    // Validación Empresa
-    if (!companyName.trim()) { 
-      newErrors.companyName = 'Ingresa el nombre de tu empresa.'; 
-      hasError = true; 
-    }
+  let newErrors = { companyName: '', email: '', password: '' };
+  let hasError = false;
 
-    // Validación Email (Debe tener formato usuario@dominio.com)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) { 
-      newErrors.email = 'Ingresa tu correo corporativo.'; 
-      hasError = true; 
-    } else if (!emailRegex.test(email)) {
-      newErrors.email = 'Incluye un "@" y un dominio válido (ej: nombre@empresa.com).'; 
-      hasError = true;
-    }
+  if (!companyName.trim()) {
+    newErrors.companyName = 'Ingresa el nombre de tu empresa.';
+    hasError = true;
+  }
 
-    // Validación Contraseña (Debe cumplir TODAS las reglas)
-    if (!password.trim()) { 
-      newErrors.password = 'Crea una contraseña para tu cuenta.'; 
-      hasError = true; 
-    } else if (!isPasswordValid) {
-      newErrors.password = 'La contraseña debe cumplir todos los requisitos de seguridad.'; 
-      hasError = true;
-    }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email.trim()) {
+    newErrors.email = 'Ingresa tu correo.';
+    hasError = true;
+  } else if (!emailRegex.test(email)) {
+    newErrors.email = 'Correo inválido.';
+    hasError = true;
+  }
 
-    setErrors(newErrors);
+  if (!password.trim() || !isPasswordValid) {
+    newErrors.password = 'Contraseña inválida.';
+    hasError = true;
+  }
 
-    // Si todo está correcto y aceptó términos
-    if (!hasError && acceptTerms) {
-      console.log('Registrando Tenant B2B:', { companyName, email, password });
-      // Aquí iría tu lógica de registro a la base de datos/API
-      onClose(); 
-    }
-  };
+  setErrors(newErrors);
 
+  if (hasError || !acceptTerms) return;
+
+  try {
+    const res = await registerTenant({
+      nombre_empresa: companyName,
+      correo_empresa: email,
+      password_admin: password
+    });
+
+    console.log("REGISTER OK:", res);
+
+    alert("Empresa registrada correctamente");
+
+    onClose();
+
+  } catch (error) {
+    alert(error.message);
+  }
+};
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
       <div className="relative w-full max-w-5xl rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/70 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-fade-in-up" style={{ animationDuration: '0.3s' }}>
