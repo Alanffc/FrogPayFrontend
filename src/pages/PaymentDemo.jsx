@@ -8,8 +8,8 @@ import CheckoutForm from '../components/CheckoutForm';
 const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
 
 // Configuración del backend de Chris (HU-2.04)
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
-const API_KEY = process.env.REACT_APP_API_KEY || 'fp_live_demo_key_for_testing';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const API_KEY = import.meta.env.VITE_API_KEY || 'fp_live_demo_key_for_testing';
 
 // Componente de beneficios
 const BenefitItem = ({ icon: Icon, title, description }) => (
