@@ -23,8 +23,8 @@ const CARD_OPTIONS = {
   },
 };
 
-// --- AÑADIMOS la prop webhookUrl para simular el envío del evento ---
-export default function CheckoutForm({ amount = "50.00", webhookUrl }) {
+// Formulario conectado con backend de Chris (HU-2.04)
+export default function CheckoutForm({ amount = "50.00", webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
   const stripe = useStripe();
   const elements = useElements();
   
@@ -32,6 +32,7 @@ export default function CheckoutForm({ amount = "50.00", webhookUrl }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [paymentResult, setPaymentResult] = useState(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -47,25 +48,60 @@ export default function CheckoutForm({ amount = "50.00", webhookUrl }) {
     if (error) {
       setErrorMessage(error.message);
       setIsProcessing(false);
-    } else {
-      console.log("Token generado con éxito:", token.id);
+      return;
+    }
+
+    // Enviar token real al endpoint de Chris (HU-2.04)
+    try {
+      const idempotencyKey = `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      const response = await fetch(`${backendUrl}/api/payments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey && { 'x-api-key': apiKey }),
+        },
+        body: JSON.stringify({
+          token: token.id,
+          monto: parseFloat(amount),
+          moneda: 'USD',
+          clave_idempotencia: idempotencyKey,
+          descripcion: 'Demo de pago desde FrogPay Dashboard',
+          metadata: {
+            source: 'frontend_demo',
+            browser: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+          },
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(result.error || `Error: ${response.status}`);
+        setIsProcessing(false);
+        return;
+      }
+
+      setPaymentResult(result);
+      console.log('Pago procesado exitosamente:', result);
       
       setTimeout(() => {
-        // --- MAGIA UX: Mensaje dinámico dependiendo de si hay Webhook ---
-        const successMsg = webhookUrl 
-          ? `¡Pago exitoso! Evento enviado a ${webhookUrl}` 
-          : '¡Pago procesado con éxito!';
+        const successMsg = result.estado === 'COMPLETED'
+          ? `¡Pago exitoso! ID: ${result.payment_id.substring(0, 8)}...`
+          : `Pago ${result.estado}: ${result.mensaje}`;
           
         setToast({ show: true, message: successMsg, type: 'success' });
         setIsSuccess(true);
         cardElement.clear();
         
-        // Resetear estado después de 2.5 segundos
         setTimeout(() => {
           setIsSuccess(false);
           setIsProcessing(false);
         }, 2500);
-      }, 1500);
+      }, 1000);
+    } catch (fetchError) {
+      setErrorMessage(`Error de red: ${fetchError.message}. Asegúrate que el backend está corriendo en ${backendUrl}`);
+      setIsProcessing(false);
     }
   };
 

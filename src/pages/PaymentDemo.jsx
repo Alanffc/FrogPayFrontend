@@ -1,10 +1,15 @@
+import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import { ShieldCheck, CheckCircle2, Zap, Lock, Server } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, Zap, Lock, Server, AlertCircle } from 'lucide-react';
 import CheckoutForm from '../components/CheckoutForm';
 
 // 🛠️ 1. Preparación del Entorno (Llave pública de prueba oficial de Stripe)
 const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
+
+// Configuración del backend de Chris (HU-2.04)
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
+const API_KEY = process.env.REACT_APP_API_KEY || 'fp_live_demo_key_for_testing';
 
 // Componente de beneficios
 const BenefitItem = ({ icon: Icon, title, description }) => (
@@ -22,6 +27,25 @@ const BenefitItem = ({ icon: Icon, title, description }) => (
 );
 
 export default function PaymentDemo() {
+  const [backendStatus, setBackendStatus] = useState(null);
+
+  useEffect(() => {
+    const checkBackendHealth = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/payments`, {
+          method: 'OPTIONS',
+        }).catch(() => ({ ok: false }));
+        setBackendStatus({ ok: response.ok, url: BACKEND_URL });
+      } catch (error) {
+        setBackendStatus({ ok: false, url: BACKEND_URL });
+      }
+    };
+
+    checkBackendHealth();
+    const interval = setInterval(checkBackendHealth, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#040A0B] relative overflow-hidden">
       
@@ -88,9 +112,24 @@ export default function PaymentDemo() {
                   <p className="text-sm text-gray-400">Utiliza una tarjeta de prueba de Stripe para simular el pago.</p>
                 </div>
 
+                {/* Alerta de estado del backend */}
+                {backendStatus && !backendStatus.ok && (
+                  <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-2">
+                    <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-red-300">
+                      <strong>Backend no disponible</strong><br />
+                      Asegúrate que el servidor en {BACKEND_URL} está corriendo.
+                    </div>
+                  </div>
+                )}
+
                 {/* El Provider de Stripe envuelve nuestro formulario */}
                 <Elements stripe={stripePromise}>
-                  <CheckoutForm amount="50.00" />
+                  <CheckoutForm 
+                    amount="50.00" 
+                    backendUrl={BACKEND_URL}
+                    apiKey={API_KEY}
+                  />
                 </Elements>
               </div>
             </div>
