@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
 import { ShieldCheck, CheckCircle2, Zap, Lock, Server, AlertCircle } from 'lucide-react';
 import CheckoutForm from '../components/CheckoutForm';
-
-// 🛠️ 1. Preparación del Entorno (Llave pública de prueba oficial de Stripe)
-const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
 
 // Configuración del backend de Chris (HU-2.04)
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -109,7 +104,7 @@ export default function PaymentDemo() {
                     <Lock size={18} lg:size={20} className="text-[#e6ff2a]" />
                     Datos de Pago
                   </h3>
-                  <p className="text-sm text-gray-400">Utiliza una tarjeta de prueba de Stripe para simular el pago.</p>
+                  <p className="text-sm text-gray-400">Procesa pagos seguros con PayPal desde una sola integracion.</p>
                 </div>
 
                 {/* Alerta de estado del backend */}
@@ -123,14 +118,11 @@ export default function PaymentDemo() {
                   </div>
                 )}
 
-                {/* El Provider de Stripe envuelve nuestro formulario */}
-                <Elements stripe={stripePromise}>
-                  <CheckoutForm 
-                    amount="50.00" 
-                    backendUrl={BACKEND_URL}
-                    apiKey={API_KEY}
-                  />
-                </Elements>
+                <CheckoutForm 
+                  amount="50.00" 
+                  backendUrl={BACKEND_URL}
+                  apiKey={API_KEY}
+                />
               </div>
             </div>
           </div>
@@ -138,24 +130,9 @@ export default function PaymentDemo() {
           <div className="glass-iphone rounded-[2rem] border border-white/10 bg-white/[0.02] p-6 lg:p-8 mb-12 lg:mb-20 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
               <Server size={24} className="text-[#e6ff2a]" />
-              Tarjetas de Prueba
+              Pago con PayPal
             </h2>
-            <div className="grid sm:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-bold text-white mb-2">Tarjeta Exitosa</h4>
-                <code className="block bg-[#020607] rounded-lg p-3 font-mono text-sm text-[#e6ff2a] border border-white/10">
-                  4242 4242 4242 4242
-                </code>
-                <p className="text-xs text-gray-400 mt-2">Cualquier fecha futura, cualquier CVC</p>
-              </div>
-              <div>
-                <h4 className="font-bold text-white mb-2">Tarjeta Rechazada</h4>
-                <code className="block bg-[#020607] rounded-lg p-3 font-mono text-sm text-red-400 border border-white/10">
-                  4000 0000 0000 0002
-                </code>
-                <p className="text-xs text-gray-400 mt-2">Para probar manejo de errores</p>
-              </div>
-            </div>
+            <p className="text-sm text-gray-400">Tu pago se procesa con el proveedor PayPal y se registra en el backend con trazabilidad completa de estados.</p>
           </div>
 
           <div className="mb-12 lg:mb-20 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
@@ -196,8 +173,8 @@ export default function PaymentDemo() {
             <h2 className="text-2xl font-bold text-white mb-8">Preguntas Frecuentes</h2>
             <div className="space-y-6">
               <div>
-                <h4 className="font-bold text-white mb-2">¿Es seguro usar tarjetas de prueba?</h4>
-                <p className="text-gray-400 text-sm">Completamente. Stripe proporciona tarjetas de prueba que nunca generan cargos reales. Están diseñadas exclusivamente para desarrollo.</p>
+                <h4 className="font-bold text-white mb-2">¿Es seguro usar PayPal?</h4>
+                <p className="text-gray-400 text-sm">Si. La integracion usa el flujo seguro de PayPal para autorizacion y confirmacion de pagos.</p>
               </div>
               <div className="border-t border-white/10 pt-6">
                 <h4 className="font-bold text-white mb-2">¿Qué sucede después de completar el pago?</h4>
