@@ -43,7 +43,7 @@ function App() {
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-[#b7f758] opacity-[0.08] blur-[120px]"></div>
         <div className="absolute top-[20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-[#0c4651] opacity-20 blur-[150px]"></div>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.04),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(230,255,42,0.06),transparent_40%)] opacity-[0.2] mix-blend-overlay"></div>
       </div>
 
       <div className="relative z-10">
