@@ -1,11 +1,12 @@
-import { Home, CreditCard, Users, Terminal, Settings, X } from 'lucide-react';
+import { Home, CreditCard, Users, Terminal, Settings, X, FlaskConical } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotype.png';
 
 const navItems = [
   { id: 'inicio', label: 'Inicio', icon: Home },
   { id: 'transacciones', label: 'Transacciones', icon: CreditCard },
   { id: 'clientes', label: 'Clientes', icon: Users },
-  { id: 'api', label: 'API & Webhooks', icon: Terminal, isActive: true }, // Mantenemos el estado activo visual
+  { id: 'api', label: 'API & Webhooks', icon: Terminal, isActive: true },
   { id: 'configuracion', label: 'Configuración', icon: Settings },
 ];
 
@@ -55,14 +56,27 @@ export default function Sidebar({ isOpen, onClose }) {
                   : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <Icon 
-                size={20} 
-                className={item.isActive ? 'text-[#e6ff2a]' : 'text-gray-500 group-hover:text-gray-300'} 
+              <Icon
+                size={20}
+                className={item.isActive ? 'text-[#e6ff2a]' : 'text-gray-500 group-hover:text-gray-300'}
               />
               {item.label}
             </a>
           );
         })}
+
+        {/* Separador + link al Demo E2E */}
+        <div className="my-3 border-t border-white/5" />
+        <div className="mb-2 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">
+          Demo
+        </div>
+        <Link
+          to="/checkout"
+          className="group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 text-[#e6ff2a]/80 hover:bg-[#e6ff2a]/10 hover:text-[#e6ff2a]"
+        >
+          <FlaskConical size={20} className="text-[#e6ff2a]/60 group-hover:text-[#e6ff2a]" />
+          Demo End-to-End
+        </Link>
       </nav>
 
       {/* User Area (Fijado al fondo) */}

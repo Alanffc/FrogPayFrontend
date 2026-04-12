@@ -3,7 +3,7 @@ import { Loader2, Lock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import Toast from './Toast';
 
 // Formulario conectado con backend de Chris (HU-2.04)
-export default function CheckoutForm({ amount = "50.00", webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
+export default function CheckoutForm({ amount = "50.00", provider = "mock", webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
   const resolvedBackendUrl = backendUrl || import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
   const resolvedApiKey = apiKey || import.meta.env.VITE_API_KEY || localStorage.getItem('api_key') || '';
   
@@ -26,16 +26,10 @@ export default function CheckoutForm({ amount = "50.00", webhookUrl, backendUrl 
         'x-api-key': resolvedApiKey,
       },
       body: JSON.stringify({
-        provider: 'paypal',
-        monto: parseFloat(amount),
-        moneda: 'USD',
-        clave_idempotencia: idempotencyKey,
-        descripcion: 'Demo de pago con PayPal desde FrogPay Dashboard',
-        metadata: {
-          source: 'frontend_demo',
-          browser: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
-          method: 'paypal',
-        },
+        provider,
+        amount: parseFloat(amount),
+        currency: 'USD',
+        description: `Demo de pago con ${provider} desde FrogPay Dashboard`,
       }),
     });
 
@@ -45,9 +39,8 @@ export default function CheckoutForm({ amount = "50.00", webhookUrl, backendUrl 
       throw new Error(result.error || `Error: ${response.status}`);
     }
 
-    const successMsg = result.estado === 'COMPLETED'
-      ? `Pago exitoso (PAYPAL) ID: ${result.payment_id.substring(0, 8)}...`
-      : `Pago ${result.estado}: ${result.mensaje}`;
+    const txId = result.payment_id ?? result.transactionId ?? '';
+    const successMsg = `Pago exitoso (PAYPAL) ID: ${txId.toString().slice(0, 8)}...`;
 
     setToast({ show: true, message: successMsg, type: 'success' });
     setIsSuccess(true);
@@ -78,11 +71,20 @@ export default function CheckoutForm({ amount = "50.00", webhookUrl, backendUrl 
         <div className={`transition-all duration-300 ${isSuccess ? 'scale-95 opacity-50' : 'scale-100 opacity-100'}`}>
           <label className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
             <Lock size={14} className="text-[#e6ff2a] shrink-0" />
-            Checkout PayPal
+            Checkout {provider === 'mock' ? 'Simulado' : 'PayPal'}
           </label>
           <div className="rounded-2xl border border-white/10 bg-[#020607] px-4 py-5 text-sm text-gray-300">
-            <p className="font-semibold text-white mb-1">Paga con PayPal</p>
-            <p>Completa tu pago de forma segura con tu cuenta PayPal.</p>
+            {provider === 'mock' ? (
+              <>
+                <p className="font-semibold text-white mb-1">Pago simulado (Mock)</p>
+                <p>Simula un cobro real sin credenciales externas. Ideal para pruebas.</p>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold text-white mb-1">Paga con PayPal</p>
+                <p>Completa tu pago de forma segura con tu cuenta PayPal.</p>
+              </>
+            )}
           </div>
 
           {errorMessage && (
@@ -110,10 +112,10 @@ export default function CheckoutForm({ amount = "50.00", webhookUrl, backendUrl 
             </>
           ) : isProcessing ? (
             <>
-              <Loader2 className="animate-spin" size={20} /> Procesando PayPal...
+              <Loader2 className="animate-spin" size={20} /> Procesando...
             </>
           ) : (
-            `Pagar $${amount} con PayPal`
+            `Pagar $${amount} con ${provider === 'mock' ? 'Simulador' : 'PayPal'}`
           )}
         </button>
       </form>
