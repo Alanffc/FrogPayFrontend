@@ -1,11 +1,12 @@
 import { Home, CreditCard, Users, Terminal, Settings, X } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotype.png';
 
 const navItems = [
-  { id: 'inicio', label: 'Inicio', icon: Home },
-  { id: 'transacciones', label: 'Transacciones', icon: CreditCard },
+  { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
+  { id: 'transacciones', label: 'Transacciones', icon: CreditCard, path: '/dashboard/transacciones' },
   { id: 'clientes', label: 'Clientes', icon: Users },
-  { id: 'api', label: 'API & Webhooks', icon: Terminal, isActive: true }, // Mantenemos el estado activo visual
+  { id: 'api', label: 'API & Webhooks', icon: Terminal, path: '/dashboard/api-keys' },
   { id: 'configuracion', label: 'Configuración', icon: Settings },
 ];
 
@@ -45,21 +46,38 @@ export default function Sidebar({ isOpen, onClose }) {
         
         {navItems.map((item) => {
           const Icon = item.icon;
+          const itemContent = (
+            <>
+              <Icon size={20} className="text-gray-500 group-hover:text-gray-300" />
+              {item.label}
+            </>
+          );
+
+          if (item.path) {
+            return (
+              <NavLink
+                key={item.id}
+                to={item.path}
+                className={({ isActive }) =>
+                  `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
+                    isActive
+                      ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
+                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  }`
+                }
+              >
+                {itemContent}
+              </NavLink>
+            );
+          }
+
           return (
             <a
               key={item.id}
               href="#"
-              className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
-                item.isActive
-                  ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
+              className="group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-gray-400 transition-all duration-300 hover:bg-white/5 hover:text-white"
             >
-              <Icon 
-                size={20} 
-                className={item.isActive ? 'text-[#e6ff2a]' : 'text-gray-500 group-hover:text-gray-300'} 
-              />
-              {item.label}
+              {itemContent}
             </a>
           );
         })}

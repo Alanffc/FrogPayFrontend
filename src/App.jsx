@@ -11,8 +11,8 @@ import PaymentDemo from "./pages/PaymentDemo.jsx";
 import LoginModal from './components/LoginModal.jsx';
 import RegisterModal from './components/RegisterModal.jsx';
 
-// 1. IMPORTAMOS TU NUEVA PANTALLA AQUÍ
 import ApiKeys from "./pages/ApiKeys.jsx";
+import CardRegistration from "./pages/CardRegistration.jsx";
 
 // --- COMPONENTE DE PROTECCIÓN DE RUTAS ---
 const ProtectedRoute = ({ isAuthenticated, children }) => {
@@ -117,10 +117,18 @@ function App() {
       />
 
       <Route 
+        path="/dashboard/transacciones" 
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <DashboardLayout Page={CardRegistration} /> 
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
         path="/dashboard/api-keys" 
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            {/* Le decimos que cargue tu nueva pantalla ApiKeys */}
             <DashboardLayout Page={ApiKeys} /> 
           </ProtectedRoute>
         } 
