@@ -142,7 +142,7 @@ const integrations = {
     { name: 'Visa', icon: CreditCard },
     { name: 'Mastercard', icon: CreditCard },
     { name: 'PayPal', icon: Wallet },
-    { name: 'Stripe Connect', icon: Server },
+    { name: 'PayPal Commerce', icon: Server },
     { name: 'Apple Pay', icon: Wallet },
     { name: 'Google Pay', icon: Wallet },
   ],

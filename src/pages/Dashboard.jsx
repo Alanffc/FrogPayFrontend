@@ -2,10 +2,6 @@
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Copy, Check, Link2, Loader2, AlertTriangle, Terminal, Zap, Menu } from 'lucide-react';
 import Toast from '../components/Toast.jsx';
-
-// --- IMPORTACIONES DE STRIPE ---
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '../components/CheckoutForm.jsx';
 
 // Tooltip de Vidrio
@@ -20,7 +16,8 @@ const GlassTooltip = ({ message }) => {
   );
 };
 
-const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const API_KEY = import.meta.env.VITE_API_KEY || 'fp_live_9a8b7c6d5e4f3g2h1i0j2k3l4m5n6o7p';
 
 export default function Dashboard({ onToggleSidebar }) {
   const fullApiKey = 'fp_live_9a8b7c6d5e4f3g2h1i0j2k3l4m5n6o7p';
@@ -159,9 +156,7 @@ export default function Dashboard({ onToggleSidebar }) {
               <h2 className="text-2xl font-bold text-white flex items-center gap-3 mb-6 mt-4">
                 <Zap size={24} className="text-[#e6ff2a]" /> Simulador
               </h2>
-              <Elements stripe={stripePromise}>
-                <CheckoutForm amount="50.00" webhookUrl={savedWebhook} />
-              </Elements>
+              <CheckoutForm amount="50.00" webhookUrl={savedWebhook} backendUrl={BACKEND_URL} apiKey={API_KEY} />
             </div>
           </div>
         </div>
