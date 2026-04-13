@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import MagneticButton from './MagneticButton.jsx';
 import LiquidGradient from '../assets/LiquidGradientV2.png'; // Asegúrate de que la ruta sea correcta
 import { X, Eye, EyeOff, ArrowRight, AlertTriangle, Check } from 'lucide-react';
-
+import { loginTenant } from '../services/auth.service';
 const CustomGlassTooltip = ({ message }) => {
   if (!message) return null;
   return (
@@ -33,36 +33,42 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
 
   if (!isOpen) return null;
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+ const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    let newErrors = { email: '', password: '' };
-    let hasError = false;
+  let newErrors = { email: '', password: '' };
+  let hasError = false;
 
-    if (!email.trim()) {
-      newErrors.email = 'Por favor, rellena este campo.';
-      hasError = true;
-    }
-    if (!password.trim()) {
-      newErrors.password = 'Por favor, rellena este campo.';
-      hasError = true;
-    }
+  if (!email.trim()) {
+    newErrors.email = 'Correo requerido';
+    hasError = true;
+  }
 
-    setErrors(newErrors);
+  if (!password.trim()) {
+    newErrors.password = 'Contraseña requerida';
+    hasError = true;
+  }
 
-    // --- CAMBIO 2: Si no hay errores, avisamos que el login fue exitoso en lugar de solo cerrar ---
-    if (!hasError) {
-      console.log('Login exitoso (simulado):', { email, password });
-      
-      // Si nos pasaron la función de éxito (desde App.jsx), la ejecutamos para cambiar de ruta
-      if (onAuthSuccess) {
-        onAuthSuccess();
-      } else {
-        onClose(); // Fallback por si acaso
-      }
-    }
-  };
+  setErrors(newErrors);
 
+  if (hasError) return;
+
+  try {
+    const res = await loginTenant({
+      correo: email,
+      password: password
+    });
+
+    console.log("LOGIN OK:", res);
+
+    alert("Login exitoso ");
+
+    if (onAuthSuccess) onAuthSuccess();
+
+  } catch (error) {
+    alert(error.message);
+  }
+};
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
       <div className="relative w-full max-w-5xl rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/70 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-fade-in-up" style={{ animationDuration: '0.3s' }}>

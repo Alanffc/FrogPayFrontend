@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react';
 import MagneticButton from './MagneticButton.jsx';
 import LiquidGradient from '../assets/LiquidGradientV2.png';
+<<<<<<< HEAD
 import { X, Eye, EyeOff, ArrowRight, AlertTriangle, Check, XCircle, Copy } from 'lucide-react';
 
+=======
+import { X, Eye, EyeOff, ArrowRight, AlertTriangle, Check, XCircle } from 'lucide-react';
+import { registerTenant } from '../services/auth.service';
+>>>>>>> 990b9f9e7cc467b261a0bf29bce964043edce61a
 // --- Componente Interno para el Tooltip Glass ---
 const CustomGlassTooltip = ({ message }) => {
   if (!message) return null;
@@ -62,6 +67,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin, onAuth
 
   if (!isOpen) return null;
 
+<<<<<<< HEAD
   // --- AQUÍ OCURRE EL CONSUMO DE LA API ---
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -74,9 +80,34 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin, onAuth
     else if (!emailRegex.test(email)) { newErrors.email = 'Dominio válido requerido.'; hasError = true; }
     if (!password.trim()) { newErrors.password = 'Crea una contraseña.'; hasError = true; } 
     else if (!isPasswordValid) { newErrors.password = 'Cumple todos los requisitos.'; hasError = true; }
+=======
+ const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    setErrors(newErrors);
+  let newErrors = { companyName: '', email: '', password: '' };
+  let hasError = false;
 
+  if (!companyName.trim()) {
+    newErrors.companyName = 'Ingresa el nombre de tu empresa.';
+    hasError = true;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email.trim()) {
+    newErrors.email = 'Ingresa tu correo.';
+    hasError = true;
+  } else if (!emailRegex.test(email)) {
+    newErrors.email = 'Correo inválido.';
+    hasError = true;
+  }
+>>>>>>> 990b9f9e7cc467b261a0bf29bce964043edce61a
+
+  if (!password.trim() || !isPasswordValid) {
+    newErrors.password = 'Contraseña inválida.';
+    hasError = true;
+  }
+
+<<<<<<< HEAD
     if (!hasError && acceptTerms) {
       setLoading(true); // Iniciamos el estado de carga
       
@@ -121,6 +152,29 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin, onAuth
     onClose();
   };
 
+=======
+  setErrors(newErrors);
+
+  if (hasError || !acceptTerms) return;
+
+  try {
+    const res = await registerTenant({
+      nombre_empresa: companyName,
+      correo_empresa: email,
+      password_admin: password
+    });
+
+    console.log("REGISTER OK:", res);
+
+    alert("Empresa registrada correctamente");
+
+    onClose();
+
+  } catch (error) {
+    alert(error.message);
+  }
+};
+>>>>>>> 990b9f9e7cc467b261a0bf29bce964043edce61a
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
       <div className="relative w-full max-w-5xl rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/70 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-fade-in-up" style={{ animationDuration: '0.3s' }}>
