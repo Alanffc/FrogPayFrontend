@@ -88,11 +88,9 @@ const [loading, setLoading] = useState(true);
 
       const res = await getKpis(timeRange);
 
-      console.log("KPIS BACKEND:", res);
-
       setKpis(res.data);
     } catch (error) {
-      console.error("Error cargando KPIs:", error);
+      // Error silencioso para no interrumpir la UX
     } finally {
       setLoading(false);
     }

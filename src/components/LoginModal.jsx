@@ -3,6 +3,7 @@ import MagneticButton from './MagneticButton.jsx';
 import LiquidGradient from '../assets/LiquidGradientV2.png'; 
 import { X, Eye, EyeOff, ArrowRight, AlertTriangle, Check } from 'lucide-react';
 import { loginTenant } from '../services/auth.service';
+import Toast from './Toast.jsx';
 
 const CustomGlassTooltip = ({ message }) => {
   if (!message) return null;
@@ -21,6 +22,7 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '' });
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -50,18 +52,20 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
 
     try {
       const res = await loginTenant({ correo: email, password: password });
-      console.log('inicio de sesion');
 
       // 🔐 CORRECCIÓN: Guardamos el token en el almacenamiento local del navegador
       if (res && res.token) {
         localStorage.setItem('token', res.token);
       }
 
-      alert("Login exitoso");
-      if (onAuthSuccess) onAuthSuccess();
+      setToast({ show: true, message: 'Login exitoso', type: 'success' });
+      setTimeout(() => {
+        if (onAuthSuccess) onAuthSuccess();
+        onClose();
+      }, 500);
 
     } catch (error) {
-      alert(error.message);
+      setToast({ show: true, message: error.message || 'Error en el login', type: 'error' });
     }
   };
 
@@ -150,6 +154,7 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
           </div>
         </div>
       </div>
+      <Toast isVisible={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Loader2, Lock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import Toast from './Toast';
+import { getStoredApiKey } from '../services/tenantKey.js';
 
 // Formulario conectado con backend de Chris (HU-2.04)
 export default function CheckoutForm({ amount = "50.00", provider = "mock", webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
   const resolvedBackendUrl = backendUrl || import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-  const resolvedApiKey = apiKey || localStorage.getItem('api_key') || import.meta.env.VITE_API_KEY || '';
+  const resolvedApiKey = apiKey || getStoredApiKey();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

@@ -3,6 +3,7 @@ import MagneticButton from './MagneticButton.jsx';
 import LiquidGradient from '../assets/LiquidGradientV2.png';
 import { X, Eye, EyeOff, ArrowRight, AlertTriangle, Check, XCircle } from 'lucide-react';
 import { registerTenant } from '../services/auth.service';
+import Toast from './Toast.jsx';
 // --- Componente Interno para el Tooltip Glass ---
 const CustomGlassTooltip = ({ message }) => {
   if (!message) return null;
@@ -22,6 +23,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin, onAuth
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   
   const [errors, setErrors] = useState({ companyName: '', email: '', password: '' });
 
@@ -96,15 +98,14 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin, onAuth
       password_admin: password
     });
 
-    console.log("REGISTER OK:", res);
-
-    alert("Empresa registrada correctamente");
-
-    if (onAuthSuccess) onAuthSuccess();
-    onClose();
+    setToast({ show: true, message: 'Empresa registrada correctamente', type: 'success' });
+    setTimeout(() => {
+      if (onAuthSuccess) onAuthSuccess();
+      onClose();
+    }, 500);
 
   } catch (error) {
-    alert(error.message);
+    setToast({ show: true, message: error.message || 'Error al registrar la empresa', type: 'error' });
   }
 };
   return (

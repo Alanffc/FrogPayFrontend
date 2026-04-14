@@ -4,6 +4,7 @@ import { Eye, EyeOff, Copy, Check, Link2, Loader2, AlertTriangle, Terminal, Zap,
 import Toast from '../components/Toast.jsx';
 import CheckoutForm from '../components/CheckoutForm.jsx';
 import { apiRequest } from '../services/api.js';
+import { getStoredApiKey, maskApiKey } from '../services/tenantKey.js';
 
 // Tooltip de Vidrio
 const GlassTooltip = ({ message }) => {
@@ -18,13 +19,10 @@ const GlassTooltip = ({ message }) => {
 };
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-const API_KEY = localStorage.getItem('api_key') || import.meta.env.VITE_API_KEY || '';
 
 export default function Dashboard({ onToggleSidebar }) {
-  const fullApiKey = API_KEY;
-  const hiddenApiKey = fullApiKey
-    ? `${fullApiKey.slice(0, 8)}••••••••••••••••••••${fullApiKey.slice(-4)}`
-    : 'Sin API Key disponible';
+  const fullApiKey = getStoredApiKey();
+  const hiddenApiKey = maskApiKey(fullApiKey) || 'Sin API Key disponible';
 
   const [isRevealed, setIsRevealed] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -198,7 +196,7 @@ export default function Dashboard({ onToggleSidebar }) {
               <h2 className="text-2xl font-bold text-white flex items-center gap-3 mb-6 mt-4">
                 <Zap size={24} className="text-[#e6ff2a]" /> Simulador
               </h2>
-              <CheckoutForm amount="50.00" webhookUrl={savedWebhook} backendUrl={BACKEND_URL} apiKey={API_KEY} />
+              <CheckoutForm amount="50.00" webhookUrl={savedWebhook} backendUrl={BACKEND_URL} apiKey={fullApiKey} />
             </div>
           </div>
         </div>

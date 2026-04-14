@@ -5,9 +5,9 @@ import {
   Terminal, Lock, AlertCircle, ChevronRight, ArrowLeft,
 } from 'lucide-react';
 import StripeCardCheckout from '../components/StripeCardCheckout.jsx';
+import { getStoredApiKey } from '../services/tenantKey.js';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-const API_KEY     = localStorage.getItem('api_key') || import.meta.env.VITE_API_KEY || '';
 const AMOUNT      = 50.00;
 
 // ── Tarjetas de prueba ─────────────────────────────────────────────────────────
@@ -539,6 +539,7 @@ function PayPalTab({ backendOk, initialOrderId }) {
 
 // ── Página Principal ───────────────────────────────────────────────────────────
 export default function PaymentDemo() {
+  const apiKey = getStoredApiKey();
   const [activeTab,           setActiveTab]           = useState('stripe');
   const [backendStatus,       setBackendStatus]       = useState(null);
   const [initialPaypalOrder,  setInitialPaypalOrder]  = useState(null);
@@ -576,10 +577,15 @@ export default function PaymentDemo() {
   }, []);
 
   useEffect(() => {
+    if (!apiKey) {
+      setStripeConfig({ publishableKey: '', enabled: false });
+      return;
+    }
+
     const loadStripeConfig = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/payments/config/stripe`, {
-          headers: { 'x-api-key': API_KEY },
+          headers: { 'x-api-key': apiKey },
         });
         const payload = await res.json().catch(() => ({}));
         if (res.ok) {
@@ -593,7 +599,7 @@ export default function PaymentDemo() {
     };
 
     loadStripeConfig();
-  }, []);
+  }, [apiKey]);
 
   const backendOk = backendStatus?.ok !== false;
 
@@ -681,7 +687,7 @@ export default function PaymentDemo() {
             <div className="space-y-4">
               <StripeCardCheckout
                 backendUrl={BACKEND_URL}
-                apiKey={API_KEY}
+                apiKey={apiKey}
                 amount={AMOUNT}
                 publishableKey={stripeConfig.publishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''}
                 onResult={setStripeResult}

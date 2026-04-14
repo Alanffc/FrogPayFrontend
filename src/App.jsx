@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import PaymentDemo from "./pages/PaymentDemo.jsx";
 import LoginModal from './components/LoginModal.jsx';
 import RegisterModal from './components/RegisterModal.jsx';
+import { logout } from './services/auth.service.js';
 
 import ApiKeys from "./pages/ApiKeys.jsx";
 import CardRegistration from "./pages/CardRegistration.jsx";
@@ -44,9 +45,16 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const onStorage = () => setIsAuthenticated(hasValidToken());
+    const syncAuthState = () => setIsAuthenticated(hasValidToken());
+    const onStorage = () => syncAuthState();
+
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener('frogpay:auth-changed', syncAuthState);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('frogpay:auth-changed', syncAuthState);
+    };
   }, []);
 
   const handleAuthSuccess = () => {
@@ -98,9 +106,17 @@ function App() {
   const DashboardLayout = ({ Page }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    const handleLogout = () => {
+      logout();
+      setSidebarOpen(false);
+      setIsAuthenticated(false);
+      navigate('/');
+      window.scrollTo(0, 0);
+    };
+
     return (
       <div className="min-h-screen bg-[#040A0B] text-white overflow-x-hidden relative">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
 
         {sidebarOpen && (
           <div

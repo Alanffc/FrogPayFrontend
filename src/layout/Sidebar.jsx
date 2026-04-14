@@ -1,4 +1,4 @@
-import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical } from 'lucide-react';
+import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 
@@ -11,7 +11,7 @@ const navItems = [
   { id: 'configuracion', label: 'Configuración', icon: Settings },
 ];
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose, onLogout }) {
   return (
     <aside
       className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
@@ -97,16 +97,27 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* User Area */}
       <div className="border-t border-white/5 p-6">
-        <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3 border border-white/5 transition-colors hover:bg-white/10 cursor-pointer">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#0c4651] to-[#e6ff2a] p-[2px]">
-            <div className="h-full w-full rounded-full bg-black flex items-center justify-center text-xs font-bold text-white">
-              MT
+        <div className="space-y-3 rounded-2xl bg-white/5 p-3 border border-white/5 transition-colors hover:bg-white/10">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#0c4651] to-[#e6ff2a] p-[2px]">
+              <div className="h-full w-full rounded-full bg-black flex items-center justify-center text-xs font-bold text-white">
+                MT
+              </div>
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-bold text-white truncate">Mi Tienda S.R.L.</p>
+              <p className="text-[10px] text-gray-500 font-mono truncate">ID: tenant_9x8f...</p>
             </div>
           </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-bold text-white truncate">Mi Tienda S.R.L.</p>
-            <p className="text-[10px] text-gray-500 font-mono truncate">ID: tenant_9x8f...</p>
-          </div>
+
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-2.5 text-sm font-semibold text-red-300 transition hover:bg-red-500/10 hover:text-red-200"
+          >
+            <LogOut size={16} />
+            Cerrar sesión
+          </button>
         </div>
       </div>
     </aside>
