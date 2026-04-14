@@ -13,6 +13,7 @@ import RegisterModal from './components/RegisterModal.jsx';
 
 import ApiKeys from "./pages/ApiKeys.jsx";
 import CardRegistration from "./pages/CardRegistration.jsx";
+import Finance from "./pages/Finance.jsx"; // IMPORTACIÓN DEL NUEVO MÓDULO
 
 // --- COMPONENTE DE PROTECCIÓN DE RUTAS ---
 const ProtectedRoute = ({ isAuthenticated, children }) => {
@@ -77,7 +78,6 @@ function App() {
   );
 
   // --- LAYOUT DEL DASHBOARD B2B ---
-  // 2. MODIFICAMOS EL LAYOUT PARA RECIBIR LA "Page" COMO PROP
   const DashboardLayout = ({ Page }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -93,7 +93,6 @@ function App() {
         )}
 
         <main className="min-h-screen flex-1 w-full lg:pl-72 transition-all duration-300">
-          {/* Renderizamos la página que nos envíen por props y le pasamos la función del sidebar */}
           <Page onToggleSidebar={() => setSidebarOpen(true)} />
         </main>
       </div>
@@ -105,13 +104,22 @@ function App() {
       <Route path="/" element={<LandingLayout />} />
       <Route path="/checkout" element={<PaymentDemo />} />
 
-      {/* 3. ACTUALIZAMOS LAS RUTAS DEL DASHBOARD */}
+      {/* --- RUTAS DEL DASHBOARD --- */}
       <Route 
         path="/dashboard" 
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            {/* Le decimos que cargue Dashboard */}
             <DashboardLayout Page={Dashboard} /> 
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* RUTA AÑADIDA: Finanzas */}
+      <Route 
+        path="/dashboard/finanzas" 
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <DashboardLayout Page={Finance} /> 
           </ProtectedRoute>
         } 
       />
