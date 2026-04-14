@@ -66,6 +66,7 @@ const [loading, setLoading] = useState(true);
   const [chartView, setChartView] = useState('ingresos');
   const [selectedProvider, setSelectedProvider] = useState('all');
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -121,7 +122,10 @@ const [loading, setLoading] = useState(true);
       txnCrec: 0,
       tkCrec: 0
     };
-  const activeDataKey = `${selectedProvider}_${chartView}`;
+const activeDataKey =
+  chartView === 'ingresos'
+    ? 'all_ingresos'
+    : 'all_transacciones';
   if (loading) {
   return (
     <div className="text-white flex justify-center items-center h-screen">
