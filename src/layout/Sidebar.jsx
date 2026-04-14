@@ -1,5 +1,5 @@
 import { Home, CreditCard, Users, Terminal, Settings, X, FlaskConical } from 'lucide-react';
-import { NavLink, Link } from 'react-router-dom';z
+import { NavLink, Link } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotype.png';
 
 const navItems = [
