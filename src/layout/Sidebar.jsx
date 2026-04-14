@@ -1,13 +1,13 @@
 import { Home, CreditCard, Users, Terminal, Settings, X, FlaskConical } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';z
 import FrogPayIsotype from '../assets/FrogPayIsotype.png';
 
 const navItems = [
-  { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
-  { id: 'transacciones', label: 'Transacciones', icon: CreditCard, path: '/dashboard/transacciones' },
-  { id: 'clientes', label: 'Clientes', icon: Users },
-  { id: 'api', label: 'API & Webhooks', icon: Terminal, isActive: true }, // Mantenemos el estado activo visual
-  { id: 'configuracion', label: 'Configuración', icon: Settings },
+  { id: 'inicio',         label: 'Inicio',         icon: Home,     path: '/dashboard' },
+  { id: 'transacciones',  label: 'Transacciones',  icon: CreditCard, path: '/dashboard/transacciones' },
+  { id: 'clientes',       label: 'Clientes',        icon: Users },
+  { id: 'api',            label: 'API & Webhooks',  icon: Terminal, path: '/dashboard/api-keys' },
+  { id: 'configuracion',  label: 'Configuración',   icon: Settings },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -17,7 +17,7 @@ export default function Sidebar({ isOpen, onClose }) {
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0 lg:flex`}
     >
-      {/* Logo Area + Botón Cerrar (Móvil) */}
+      {/* Logo + Botón Cerrar (móvil) */}
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-6 py-8 lg:px-8">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl shadow-[0_0_15px_rgba(230,255,42,0.15)] overflow-hidden">
@@ -27,8 +27,6 @@ export default function Sidebar({ isOpen, onClose }) {
             Frog<span className="text-[#e6ff2a]">Pay</span>
           </span>
         </div>
-
-        {/* Botón X: Solo visible en móviles cuando el sidebar está abierto */}
         <button
           type="button"
           className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-2 text-white transition hover:bg-white/10 lg:hidden"
@@ -43,7 +41,7 @@ export default function Sidebar({ isOpen, onClose }) {
         <div className="mb-4 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">
           Panel de Control
         </div>
-        
+
         {navItems.map((item) => {
           const Icon = item.icon;
           const itemContent = (
@@ -77,16 +75,12 @@ export default function Sidebar({ isOpen, onClose }) {
               href="#"
               className="group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-gray-400 transition-all duration-300 hover:bg-white/5 hover:text-white"
             >
-              <Icon 
-                size={20} 
-                className={item.isActive ? 'text-[#e6ff2a]' : 'text-gray-500 group-hover:text-gray-300'} 
-              />
-              {item.label}
+              {itemContent}
             </a>
           );
         })}
 
-        {/* Separador + link al Demo E2E */}
+        {/* Separador + Demo E2E */}
         <div className="my-3 border-t border-white/5" />
         <div className="mb-2 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">
           Demo
@@ -100,7 +94,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </Link>
       </nav>
 
-      {/* User Area (Fijado al fondo) */}
+      {/* User Area */}
       <div className="border-t border-white/5 p-6">
         <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3 border border-white/5 transition-colors hover:bg-white/10 cursor-pointer">
           <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#0c4651] to-[#e6ff2a] p-[2px]">
