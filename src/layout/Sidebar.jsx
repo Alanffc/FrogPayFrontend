@@ -1,22 +1,18 @@
-import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp ,FlaskConical} from 'lucide-react';
-import { NavLink,Link } from 'react-router-dom';
+import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical } from 'lucide-react';
+import { NavLink, Link } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 
 const navItems = [
   { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
   { id: 'finanzas', label: 'Finanzas', icon: TrendingUp, path: '/dashboard/finanzas' },
-  { id: 'transacciones', label: 'Transacciones', icon: CreditCard, path: '/dashboard/transacciones' },
-  { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'api', label: 'API & Webhooks', icon: Terminal, path: '/dashboard/api-keys' },
-  { id: 'configuracion', label: 'Configuración', icon: Settings },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
   return (
     <aside
-      className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 lg:flex`}
+      className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 lg:flex`}
     >
       {/* Logo + Botón Cerrar (móvil) */}
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-6 py-8 lg:px-8">
@@ -58,10 +54,9 @@ export default function Sidebar({ isOpen, onClose }) {
                 key={item.id}
                 to={item.path}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
-                    isActive
-                      ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
-                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${isActive
+                    ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
                   }`
                 }
               >
