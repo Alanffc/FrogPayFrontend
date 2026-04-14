@@ -12,7 +12,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-
+import { getKpis } from '../services/finance.service';
 // --- SVGs DE MARCAS INTEGADOS ---
 const StripeIcon = () => (
   <svg viewBox="0 0 60 25" className="h-4 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -56,15 +56,12 @@ const providerData = [
   { id: 'cripto', nombre: 'Cripto (Binance)', valor: 10, color: brandColors.cripto.income, Icon: CryptoIcon },
 ];
 
-const kpiData = {
-  all: { volumen: 42200, transacciones: 1110, ticket: 38.01, volCrec: 18.2, txnCrec: 5.4, tkCrec: -1.2 },
-  stripe: { volumen: 27430, transacciones: 723, ticket: 37.93, volCrec: 20.1, txnCrec: 6.2, tkCrec: 0.5 },
-  paypal: { volumen: 10550, transacciones: 276, ticket: 38.22, volCrec: 12.5, txnCrec: 4.1, tkCrec: -2.1 },
-  cripto: { volumen: 4220, transacciones: 111, ticket: 38.01, volCrec: 25.0, txnCrec: 8.0, tkCrec: 1.5 }
-};
 
 // IMPORTANTE: Recibimos la prop onToggleSidebar desde App.jsx
 export default function Finance({ onToggleSidebar }) {
+  
+const [kpis, setKpis] = useState(null);
+const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7d');
   const [chartView, setChartView] = useState('ingresos');
   const [selectedProvider, setSelectedProvider] = useState('all');
@@ -84,13 +81,54 @@ export default function Finance({ onToggleSidebar }) {
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB', maximumFractionDigits: 0 }).format(value);
   };
+  useEffect(() => {
+  const fetchKpis = async () => {
+    try {
+      setLoading(true);
 
+      const res = await getKpis(timeRange);
+
+      console.log("KPIS BACKEND:", res);
+
+      setKpis(res.data);
+    } catch (error) {
+      console.error("Error cargando KPIs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchKpis();
+}, [timeRange]);
   const activeIncomeColor = brandColors[selectedProvider].income;
   const activeVolumeColor = brandColors[selectedProvider].volume;
   const activeChartColor = chartView === 'ingresos' ? activeIncomeColor : activeVolumeColor;
   
-  const currentKPIs = kpiData[selectedProvider];
+  const currentKPIs = kpis
+  ? {
+      volumen: kpis.volumenProcesado?.valor || 0,
+      transacciones: kpis.pagosExitosos?.valor || 0,
+      ticket: kpis.ticketPromedio?.valor || 0,
+      volCrec: kpis.volumenProcesado?.crecimientoPorcentaje || 0,
+      txnCrec: kpis.pagosExitosos?.crecimientoPorcentaje || 0,
+      tkCrec: kpis.ticketPromedio?.crecimientoPorcentaje || 0
+    }
+  : {
+      volumen: 0,
+      transacciones: 0,
+      ticket: 0,
+      volCrec: 0,
+      txnCrec: 0,
+      tkCrec: 0
+    };
   const activeDataKey = `${selectedProvider}_${chartView}`;
+  if (loading) {
+  return (
+    <div className="text-white flex justify-center items-center h-screen">
+      Cargando métricas...
+    </div>
+  );
+}
 
   // --- EXPORTACIÓN ---
   const exportToExcel = async () => {
