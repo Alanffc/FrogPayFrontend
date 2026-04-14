@@ -6,11 +6,27 @@ import { loginTenant } from '../services/auth.service';
 
 const CustomGlassTooltip = ({ message }) => {
   if (!message) return null;
+
   return (
     <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 flex items-center gap-2.5 rounded-xl border border-white/10 bg-black/80 px-4 py-3 text-sm text-white shadow-2xl backdrop-blur-md whitespace-nowrap">
       <AlertTriangle size={18} className="text-[#e6ff2a]" />
       <p>{message}</p>
       <div className="absolute -top-[8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-black/80"></div>
+    </div>
+  );
+};
+
+const Toast = ({ message, type }) => {
+  if (!message) return null;
+
+  const styles = {
+    success: "bg-[#e6ff2a]/10 border-[#e6ff2a]/20 text-[#e6ff2a]",
+    error: "bg-red-500/10 border-red-500/20 text-red-400"
+  };
+
+  return (
+    <div className={`fixed bottom-6 right-6 z-[999] px-5 py-3 rounded-xl border backdrop-blur-xl shadow-2xl ${styles[type]}`}>
+      {message}
     </div>
   );
 };
@@ -21,6 +37,7 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '' });
+  const [toast, setToast] = useState({ message: '', type: 'success' });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -57,11 +74,22 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
         localStorage.setItem('token', res.token);
       }
 
-      alert("Login exitoso");
-      if (onAuthSuccess) onAuthSuccess();
+     setToast({ message: "Inicio de sesión exitoso", type: "success" });
+
+setTimeout(() => {
+  setToast({ message: "", type: "success" });
+  onAuthSuccess && onAuthSuccess();
+}, 1200);
 
     } catch (error) {
-      alert(error.message);
+      setToast({
+  message: error?.message || "Credenciales incorrectas",
+  type: "error"
+});
+
+setTimeout(() => {
+  setToast({ message: "", type: "error" });
+}, 2500);
     }
   };
 
@@ -150,6 +178,7 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
           </div>
         </div>
       </div>
+      <Toast message={toast.message} type={toast.type} />
     </div>
   );
 }
