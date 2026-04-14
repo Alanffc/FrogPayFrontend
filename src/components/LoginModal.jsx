@@ -76,10 +76,9 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
 
      setToast({ message: "Inicio de sesión exitoso", type: "success" });
 
-setTimeout(() => {
-  setToast({ message: "", type: "success" });
-  onAuthSuccess && onAuthSuccess();
-}, 1200);
+setToast({ message: "Inicio de sesión exitoso", type: "success" });
+
+onAuthSuccess && onAuthSuccess();
 
     } catch (error) {
       setToast({
