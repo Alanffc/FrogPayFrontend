@@ -1,6 +1,6 @@
 import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import FrogPayIsotype from '../assets/FrogPayIsotype.png';
+import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 
 const navItems = [
   { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
