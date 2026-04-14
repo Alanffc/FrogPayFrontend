@@ -5,7 +5,7 @@ import Toast from './Toast';
 // Formulario conectado con backend de Chris (HU-2.04)
 export default function CheckoutForm({ amount = "50.00", provider = "mock", webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
   const resolvedBackendUrl = backendUrl || import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-  const resolvedApiKey = apiKey || import.meta.env.VITE_API_KEY || localStorage.getItem('api_key') || '';
+  const resolvedApiKey = apiKey || localStorage.getItem('api_key') || import.meta.env.VITE_API_KEY || '';
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -29,6 +29,7 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", webh
         provider,
         amount: parseFloat(amount),
         currency: 'USD',
+        idempotencyKey,
         description: `Demo de pago con ${provider} desde FrogPay Dashboard`,
       }),
     });
@@ -40,7 +41,7 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", webh
     }
 
     const txId = result.payment_id ?? result.transactionId ?? '';
-    const successMsg = `Pago exitoso (PAYPAL) ID: ${txId.toString().slice(0, 8)}...`;
+    const successMsg = `Pago exitoso (${provider.toUpperCase()}) ID: ${txId.toString().slice(0, 8)}...`;
 
     setToast({ show: true, message: successMsg, type: 'success' });
     setIsSuccess(true);

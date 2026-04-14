@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Copy, Check, Link2, Loader2, AlertTriangle, Terminal, Zap, Menu } from 'lucide-react';
 import Toast from '../components/Toast.jsx';
 import CheckoutForm from '../components/CheckoutForm.jsx';
+import { apiRequest } from '../services/api.js';
 
 // Tooltip de Vidrio
 const GlassTooltip = ({ message }) => {
@@ -17,17 +18,20 @@ const GlassTooltip = ({ message }) => {
 };
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-const API_KEY = import.meta.env.VITE_API_KEY || 'fp_live_9a8b7c6d5e4f3g2h1i0j2k3l4m5n6o7p';
+const API_KEY = localStorage.getItem('api_key') || import.meta.env.VITE_API_KEY || '';
 
 export default function Dashboard({ onToggleSidebar }) {
-  const fullApiKey = 'fp_live_9a8b7c6d5e4f3g2h1i0j2k3l4m5n6o7p';
-  const hiddenApiKey = 'fp_live_••••••••••••••••••••••••••••••';
+  const fullApiKey = API_KEY;
+  const hiddenApiKey = fullApiKey
+    ? `${fullApiKey.slice(0, 8)}••••••••••••••••••••${fullApiKey.slice(-4)}`
+    : 'Sin API Key disponible';
 
   const [isRevealed, setIsRevealed] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [savedWebhook, setSavedWebhook] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingWebhook, setIsLoadingWebhook] = useState(true);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [isHttpWarning, setIsHttpWarning] = useState(false);
 
@@ -41,7 +45,35 @@ export default function Dashboard({ onToggleSidebar }) {
     setIsHttpWarning(webhookUrl.startsWith('http://'));
   }, [webhookUrl]);
 
+  useEffect(() => {
+    const loadWebhook = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsLoadingWebhook(false);
+        return;
+      }
+
+      try {
+        const data = await apiRequest('/webhooks', 'GET', null, token);
+        const currentUrl = data?.data?.url || '';
+        setWebhookUrl(currentUrl);
+        setSavedWebhook(currentUrl);
+      } catch (_error) {
+        setToast({ show: true, message: 'No se pudo cargar el webhook actual', type: 'error' });
+      } finally {
+        setIsLoadingWebhook(false);
+      }
+    };
+
+    loadWebhook();
+  }, []);
+
   const handleCopy = async () => {
+    if (!fullApiKey) {
+      setToast({ show: true, message: 'No hay API Key para copiar', type: 'error' });
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(fullApiKey);
       setIsCopied(true);
@@ -52,14 +84,24 @@ export default function Dashboard({ onToggleSidebar }) {
     }
   };
 
-  const handleSaveWebhook = () => {
+  const handleSaveWebhook = async () => {
     if (!webhookUrl.trim() || isHttpWarning) return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setToast({ show: true, message: 'Sesión expirada', type: 'error' });
+      return;
+    }
+
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      const data = await apiRequest('/webhooks', 'PUT', { url: webhookUrl, evento: 'payment.completed', activo: true }, token);
       setIsSaving(false);
-      setSavedWebhook(webhookUrl);
+      setSavedWebhook(data?.data?.url || webhookUrl);
       setToast({ show: true, message: 'Webhook guardado', type: 'success' });
-    }, 1500);
+    } catch (error) {
+      setIsSaving(false);
+      setToast({ show: true, message: error.message || 'Error guardando webhook', type: 'error' });
+    }
   };
 
   return (
@@ -140,7 +182,7 @@ export default function Dashboard({ onToggleSidebar }) {
                 </div>
                 <button
                   onClick={handleSaveWebhook}
-                  disabled={!webhookUrl.trim() || isHttpWarning || isSaving}
+                  disabled={!webhookUrl.trim() || isHttpWarning || isSaving || isLoadingWebhook}
                   className="bg-[#e6ff2a] text-[#04181C] px-8 py-4 rounded-2xl font-bold hover:bg-[#b7f758] disabled:opacity-30 transition-all"
                 >
                   {isSaving ? <Loader2 className="animate-spin" /> : 'Guardar'}

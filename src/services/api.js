@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:3000/api";
 
 export const apiRequest = async (endpoint, method = "GET", body = null, token = null) => {
   try {
@@ -11,7 +11,7 @@ export const apiRequest = async (endpoint, method = "GET", body = null, token = 
       ...(body && { body: JSON.stringify(body) })
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       throw new Error(data.error || "Error en la petición");

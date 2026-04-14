@@ -1,5 +1,5 @@
 /* src/App.jsx */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 
 import Navbar from "./layout/Navbar.jsx";
@@ -24,13 +24,30 @@ const ProtectedRoute = ({ isAuthenticated, children }) => {
 };
 
 function App() {
+  const hasValidToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!payload?.exp) return false;
+      return Date.now() < payload.exp * 1000;
+    } catch (_error) {
+      return false;
+    }
+  };
+
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  
-  // Cambia a 'true' para entrar directo al Dashboard durante tus pruebas
-  const [isAuthenticated, setIsAuthenticated] = useState(true); 
+  const [isAuthenticated, setIsAuthenticated] = useState(hasValidToken());
   
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onStorage = () => setIsAuthenticated(hasValidToken());
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const handleAuthSuccess = () => {
     setIsLoginOpen(false);

@@ -4,9 +4,10 @@ import {
   CreditCard, Zap, CheckCircle2, XCircle, Loader2,
   Terminal, Lock, AlertCircle, ChevronRight, ArrowLeft,
 } from 'lucide-react';
+import StripeCardCheckout from '../components/StripeCardCheckout.jsx';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-const API_KEY     = import.meta.env.VITE_API_KEY     || 'fp_live_demo_key_for_testing';
+const API_KEY     = localStorage.getItem('api_key') || import.meta.env.VITE_API_KEY || '';
 const AMOUNT      = 50.00;
 
 // ── Tarjetas de prueba ─────────────────────────────────────────────────────────
@@ -141,11 +142,11 @@ function CardTab({ backendOk }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
         body: JSON.stringify({
-          provider: 'mock',
+          provider: 'card',
           amount: AMOUNT,
           currency: 'USD',
           description: 'Demo tarjeta simulada — FrogPay',
-          cardNumber: rawNumber,
+          paymentToken: rawNumber,
         }),
       });
       backendStatus = res.status;
@@ -173,7 +174,7 @@ function CardTab({ backendOk }) {
         amount: AMOUNT,
         currency: 'USD',
         status: backendBody.estado ?? (isApproved ? 'COMPLETED' : 'FAILED'),
-        provider: 'mock',
+        provider: 'card',
         card_last4: rawNumber.slice(-4),
         ...(backendBody.raw && { detail: backendBody.raw }),
       },
@@ -538,9 +539,11 @@ function PayPalTab({ backendOk, initialOrderId }) {
 
 // ── Página Principal ───────────────────────────────────────────────────────────
 export default function PaymentDemo() {
-  const [activeTab,           setActiveTab]           = useState('card');
+  const [activeTab,           setActiveTab]           = useState('stripe');
   const [backendStatus,       setBackendStatus]       = useState(null);
   const [initialPaypalOrder,  setInitialPaypalOrder]  = useState(null);
+  const [stripeConfig,        setStripeConfig]        = useState({ publishableKey: '', enabled: false });
+  const [stripeResult,        setStripeResult]        = useState(null);
 
   // Detectar retorno de PayPal: ?token=ORDER_ID&PayerID=...
   useEffect(() => {
@@ -570,6 +573,26 @@ export default function PaymentDemo() {
     check();
     const id = setInterval(check, 6000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const loadStripeConfig = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/payments/config/stripe`, {
+          headers: { 'x-api-key': API_KEY },
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setStripeConfig(payload);
+          return;
+        }
+        setStripeConfig({ publishableKey: '', enabled: false });
+      } catch (_error) {
+        setStripeConfig({ publishableKey: '', enabled: false });
+      }
+    };
+
+    loadStripeConfig();
   }, []);
 
   const backendOk = backendStatus?.ok !== false;
@@ -623,6 +646,16 @@ export default function PaymentDemo() {
         <div className="glass-iphone rounded-[2rem] border border-white/10 bg-white/[0.02] p-6 sm:p-8">
           <div className="flex gap-1 mb-8 bg-white/[0.04] rounded-xl p-1">
             <button
+              onClick={() => setActiveTab('stripe')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
+                activeTab === 'stripe'
+                  ? 'bg-[#e6ff2a] text-[#04181C] shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <CreditCard size={15} /> Tarjeta (Stripe real)
+            </button>
+            <button
               onClick={() => setActiveTab('card')}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
                 activeTab === 'card'
@@ -644,10 +677,30 @@ export default function PaymentDemo() {
             </button>
           </div>
 
-          {activeTab === 'card'
-            ? <CardTab backendOk={backendOk} />
-            : <PayPalTab backendOk={backendOk} initialOrderId={initialPaypalOrder} />
-          }
+          {activeTab === 'stripe' && (
+            <div className="space-y-4">
+              <StripeCardCheckout
+                backendUrl={BACKEND_URL}
+                apiKey={API_KEY}
+                amount={AMOUNT}
+                publishableKey={stripeConfig.publishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''}
+                onResult={setStripeResult}
+              />
+
+              {stripeResult && (
+                <div className={`rounded-xl border p-4 text-sm ${stripeResult.ok ? 'border-green-500/40 bg-green-500/10 text-green-300' : 'border-red-500/40 bg-red-500/10 text-red-300'}`}>
+                  {stripeResult.ok ? (
+                    <span className="inline-flex items-center gap-2"><CheckCircle2 size={16} /> {stripeResult.message}</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2"><XCircle size={16} /> {stripeResult.message}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'card' && <CardTab backendOk={backendOk} />}
+          {activeTab === 'paypal' && <PayPalTab backendOk={backendOk} initialOrderId={initialPaypalOrder} />}
         </div>
 
         {/* Info tarjetas de prueba */}

@@ -16,7 +16,7 @@ const CustomGlassTooltip = ({ message }) => {
 };
 // --------------------------------------------------
 
-export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
+export default function RegisterModal({ isOpen, onClose, onSwitchToLogin, onAuthSuccess }) {
   const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -100,6 +100,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
 
     alert("Empresa registrada correctamente");
 
+    if (onAuthSuccess) onAuthSuccess();
     onClose();
 
   } catch (error) {
