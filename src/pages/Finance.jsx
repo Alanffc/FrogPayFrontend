@@ -12,7 +12,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { getKpis } from '../services/finance.service';
+import { getKpis, getChart } from '../services/finance.service';
 // --- SVGs DE MARCAS INTEGADOS ---
 const StripeIcon = () => (
   <svg viewBox="0 0 60 25" className="h-4 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -330,7 +330,9 @@ const [loading, setLoading] = useState(true);
             <div className="relative z-10">
               <p className="text-sm font-medium text-gray-400">Ticket Promedio</p>
               <div className="mt-3 flex flex-wrap items-baseline gap-3">
-                <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">Bs {currentKPIs.ticket}</h2>
+                <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+  {formatCurrency(currentKPIs.ticket)}
+</h2>
                 <span className={`flex items-center text-sm font-bold border px-2.5 py-1 rounded-full ${currentKPIs.tkCrec >= 0 ? 'text-blue-400 bg-blue-400/10 border-blue-400/20' : 'text-red-400 bg-red-400/10 border-red-400/20'}`}>
                   {currentKPIs.tkCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />} 
                   {Math.abs(currentKPIs.tkCrec)}%
