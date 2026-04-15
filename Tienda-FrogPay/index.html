@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Tienda demo para probar FrogPay en un flujo de compra real." />
+    <title>FrogMarket - Demo de tienda para FrogPay</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb bg-orb-one"></div>
+    <div class="bg-orb bg-orb-two"></div>
+
+    <header class="shell hero">
+      <div class="brand-row">
+        <div class="brand-mark">F</div>
+        <div>
+          <p class="eyebrow">Tienda demo para FrogPay</p>
+          <h1>FrogMarket</h1>
+        </div>
+      </div>
+      <p class="hero-copy">
+        Un checkout simple para validar pagos reales, webhooks y respuesta del backend antes de salir a producción.
+      </p>
+      <div class="hero-badges">
+        <span>Pago real con API Key</span>
+        <span>Tarjeta, PayPal y Mock</span>
+        <span>Multi-tenant listo para pruebas</span>
+      </div>
+      <div class="admin-actions-row">
+        <a href="/admin" class="ghost-button">Abrir panel admin</a>
+      </div>
+    </header>
+
+    <main class="shell layout">
+      <section class="panel catalog-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Catálogo</p>
+            <h2>Productos de prueba</h2>
+          </div>
+          <div class="pill" id="cart-count">0 items</div>
+        </div>
+
+        <div id="catalog" class="catalog"></div>
+      </section>
+
+      <aside class="panel cart-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Checkout</p>
+            <h2>Carrito y pago</h2>
+          </div>
+          <button class="ghost-button" id="clear-cart" type="button">Vaciar</button>
+        </div>
+
+        <div id="cart-items" class="cart-items"></div>
+
+        <div class="totals">
+          <div>
+            <span>Subtotal</span>
+            <strong id="subtotal">$0.00</strong>
+          </div>
+          <div>
+            <span>Total</span>
+            <strong id="total">$0.00</strong>
+          </div>
+        </div>
+
+        <form id="checkout-form" class="checkout-form">
+          <div class="field-grid">
+            <label>
+              <span>Nombre</span>
+              <input name="customerName" type="text" placeholder="Ana Pérez" required />
+            </label>
+            <label>
+              <span>Email</span>
+              <input name="customerEmail" type="email" placeholder="ana@correo.com" required />
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              <span>Backend FrogPay</span>
+              <input name="backendUrl" type="url" value="http://localhost:3000" />
+            </label>
+            <label>
+              <span>API Key del tenant</span>
+              <input name="apiKey" type="password" placeholder="fp_live_..." autocomplete="off" />
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              <span>Método de pago</span>
+              <select name="provider" id="provider-select">
+                <option value="card">Tarjeta</option>
+                <option value="paypal">PayPal</option>
+                <option value="mock">Mock</option>
+              </select>
+            </label>
+            <label>
+              <span>Token de tarjeta</span>
+              <input name="cardToken" id="card-token" type="text" value="4242424242424242" autocomplete="off" />
+            </label>
+          </div>
+
+          <button class="primary-button" type="submit" id="pay-button">Pagar con FrogPay</button>
+        </form>
+
+        <div class="settings-row">
+          <label class="remember">
+            <input type="checkbox" id="remember-settings" checked />
+            Guardar settings en este navegador
+          </label>
+        </div>
+
+        <section class="result-card">
+          <div class="result-head">
+            <p class="eyebrow">Respuesta</p>
+            <span id="result-status" class="status neutral">En espera</span>
+          </div>
+          <pre id="result-body">Selecciona productos y completa el pago para ver la respuesta del backend.</pre>
+        </section>
+      </aside>
+    </main>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
