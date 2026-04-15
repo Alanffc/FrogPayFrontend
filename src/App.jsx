@@ -13,7 +13,7 @@ import RegisterModal from './components/RegisterModal.jsx';
 import { logout } from './services/auth.service.js';
 
 import ApiKeys from "./pages/ApiKeys.jsx";
-import CardRegistration from "./pages/CardRegistration.jsx";
+import PayoutAccounts from "./pages/PayoutAccounts.jsx";
 import Finance from "./pages/Finance.jsx"; // IMPORTACIÓN DEL NUEVO MÓDULO
 
 // --- COMPONENTE DE PROTECCIÓN DE RUTAS ---
@@ -158,12 +158,17 @@ function App() {
       />
 
       <Route 
-        path="/dashboard/transacciones" 
+        path="/dashboard/cuentas-cobro" 
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={CardRegistration} /> 
+            <DashboardLayout Page={PayoutAccounts} /> 
           </ProtectedRoute>
         } 
+      />
+
+      <Route
+        path="/dashboard/transacciones"
+        element={<Navigate to="/dashboard/cuentas-cobro" replace />}
       />
 
       <Route 

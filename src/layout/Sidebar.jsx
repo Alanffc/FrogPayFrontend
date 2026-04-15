@@ -5,7 +5,7 @@ import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 const navItems = [
   { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
   { id: 'finanzas', label: 'Finanzas', icon: TrendingUp, path: '/dashboard/finanzas' },
-  { id: 'transacciones', label: 'Transacciones', icon: CreditCard, path: '/dashboard/transacciones' },
+  { id: 'cuentas-cobro', label: 'Cuentas de Cobro', icon: CreditCard, path: '/dashboard/cuentas-cobro' },
   { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'api', label: 'API & Webhooks', icon: Terminal, path: '/dashboard/api-keys' },
   { id: 'configuracion', label: 'Configuración', icon: Settings },
