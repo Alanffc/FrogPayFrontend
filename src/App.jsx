@@ -11,10 +11,12 @@ import PaymentDemo from "./pages/PaymentDemo.jsx";
 import LoginModal from './components/LoginModal.jsx';
 import RegisterModal from './components/RegisterModal.jsx';
 import { logout } from './services/auth.service.js';
+import { upgradePlan, downgradePlan } from './services/tenant.service.js';
 
 import ApiKeys from "./pages/ApiKeys.jsx";
 import PayoutAccounts from "./pages/PayoutAccounts.jsx";
 import Finance from "./pages/Finance.jsx";
+import Plans from "./pages/Plans.jsx";
 import Configuracion from "./pages/Configuracion.jsx";
 
 // --- COMPONENTE DE PROTECCIÓN DE RUTAS ---
@@ -42,7 +44,21 @@ function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(hasValidToken());
-  
+
+  // Estado del plan: se lee del token JWT al cargar, y se actualiza tras el upgrade
+  const getPlanFromToken = () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return 'FREEMIUM';
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return (payload?.plan || 'FREEMIUM').toUpperCase();
+    } catch (_) {
+      return 'FREEMIUM';
+    }
+  };
+
+  const [currentPlan, setCurrentPlan] = useState(getPlanFromToken());
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,12 +74,44 @@ function App() {
     };
   }, []);
 
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = (authData) => {
     setIsLoginOpen(false);
     setIsRegisterOpen(false);
     setIsAuthenticated(true);
-    navigate('/dashboard'); 
+    // Si el login retorna datos con el plan, actualizamos el estado inmediatamente
+    if (authData?.empresa?.plan) {
+      setCurrentPlan(authData.empresa.plan.toUpperCase());
+    } else {
+      setCurrentPlan(getPlanFromToken());
+    }
+    navigate('/dashboard');
     window.scrollTo(0, 0);
+  };
+
+  // Función de upgrade: llama al endpoint y actualiza el plan en el estado global
+  const handleUpgrade = async () => {
+    try {
+      const result = await upgradePlan();
+      if (result?.empresa?.plan) {
+        setCurrentPlan(result.empresa.plan.toUpperCase());
+      }
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // Función de downgrade: vuelve a FREEMIUM
+  const handleDowngrade = async () => {
+    try {
+      const result = await downgradePlan();
+      if (result?.empresa?.plan) {
+        setCurrentPlan(result.empresa.plan.toUpperCase());
+      }
+      return result;
+    } catch (error) {
+      throw error;
+    }
   };
 
   // --- LAYOUT DE LA LANDING PAGE (Home) ---
@@ -77,9 +125,9 @@ function App() {
       </div>
 
       <div className="relative z-10">
-        <Navbar 
-          onLoginClick={() => setIsLoginOpen(true)} 
-          onRegisterClick={() => setIsRegisterOpen(true)} 
+        <Navbar
+          onLoginClick={() => setIsLoginOpen(true)}
+          onRegisterClick={() => setIsRegisterOpen(true)}
         />
         <main>
           <Home onLoginClick={() => setIsRegisterOpen(true)} />
@@ -87,17 +135,17 @@ function App() {
         <Footer />
       </div>
 
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        onAuthSuccess={handleAuthSuccess} 
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
         onSwitchToRegister={() => { setIsLoginOpen(false); setIsRegisterOpen(true); }}
       />
 
-      <RegisterModal 
-        isOpen={isRegisterOpen} 
-        onClose={() => setIsRegisterOpen(false)} 
-        onAuthSuccess={handleAuthSuccess} 
+      <RegisterModal
+        isOpen={isRegisterOpen}
+        onClose={() => setIsRegisterOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
         onSwitchToLogin={() => { setIsRegisterOpen(false); setIsLoginOpen(true); }}
       />
     </div>
@@ -111,13 +159,19 @@ function App() {
       logout();
       setSidebarOpen(false);
       setIsAuthenticated(false);
+      setCurrentPlan('FREEMIUM');
       navigate('/');
       window.scrollTo(0, 0);
     };
 
     return (
       <div className="min-h-screen bg-[#040A0B] text-white overflow-x-hidden relative">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onLogout={handleLogout}
+          currentPlan={currentPlan}
+        />
 
         {sidebarOpen && (
           <div
@@ -127,7 +181,12 @@ function App() {
         )}
 
         <main className="min-h-screen flex-1 w-full lg:pl-72 transition-all duration-300">
-          <Page onToggleSidebar={() => setSidebarOpen(true)} />
+          <Page
+            onToggleSidebar={() => setSidebarOpen(true)}
+            currentPlan={currentPlan}
+            onUpgrade={handleUpgrade}
+            onDowngrade={handleDowngrade}
+          />
         </main>
       </div>
     );
@@ -139,32 +198,37 @@ function App() {
       <Route path="/checkout" element={<PaymentDemo />} />
 
       {/* --- RUTAS DEL DASHBOARD --- */}
-      <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={Dashboard} /> 
+            <DashboardLayout Page={Dashboard} />
           </ProtectedRoute>
-        } 
+        }
       />
 
       {/* RUTA AÑADIDA: Finanzas */}
-      <Route 
-        path="/dashboard/finanzas" 
+      <Route
+        path="/dashboard/finanzas"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={Finance} /> 
+            <DashboardLayout Page={Finance} />
           </ProtectedRoute>
-        } 
+        }
       />
 
-      <Route 
-        path="/dashboard/cuentas-cobro" 
+      <Route
+        path="/dashboard/cuentas-cobro"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={PayoutAccounts} /> 
+            <DashboardLayout Page={PayoutAccounts} />
           </ProtectedRoute>
-        } 
+        }
+      />
+
+      <Route
+        path="/dashboard/configuracion"
+        element={<Navigate to="/dashboard/cuentas-cobro" replace />}
       />
 
       <Route
@@ -172,13 +236,13 @@ function App() {
         element={<Navigate to="/dashboard/cuentas-cobro" replace />}
       />
 
-      <Route 
-        path="/dashboard/api-keys" 
+      <Route
+        path="/dashboard/api-keys"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={ApiKeys} /> 
+            <DashboardLayout Page={ApiKeys} />
           </ProtectedRoute>
-        } 
+        }
       />
 
       <Route
@@ -186,6 +250,16 @@ function App() {
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
             <DashboardLayout Page={Configuracion} />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* RUTA: Planes */}
+      <Route
+        path="/dashboard/planes"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <DashboardLayout Page={Plans} />
           </ProtectedRoute>
         }
       />
