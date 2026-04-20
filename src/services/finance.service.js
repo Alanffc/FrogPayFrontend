@@ -28,3 +28,27 @@ export const getPaymentDetail = async (paymentId) => {
   const token = localStorage.getItem("token");
   return apiRequest(`/payments/${paymentId}`, "GET", null, token);
 };
+
+
+export const getDashboard = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+
+  const res = await fetch(`http://localhost:3000/api/financesdashboards/kpis?${query}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+
+  if (!res.ok) throw new Error('Error cargando dashboard');
+
+  return res.json();
+};
+export const exportDashboardExcel = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  window.open(`http://localhost:3000/api/financesdashboards/kpis/export/excel?${query}`);
+};
+
+export const exportDashboardPDF = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  window.open(`http://localhost:3000/api/financesdashboards/kpis/export/pdf?${query}`);
+};

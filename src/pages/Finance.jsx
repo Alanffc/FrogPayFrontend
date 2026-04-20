@@ -27,11 +27,15 @@ import {
   Search,
   ArrowUpDown,
 } from 'lucide-react';
-import jsPDF from 'jspdf';
+/*import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
-import { getKpis, getPayments, getPaymentDetail } from '../services/finance.service';
+import { saveAs } from 'file-saver';*/
+import {  getDashboard, 
+  exportDashboardExcel, 
+  exportDashboardPDF,
+  getPayments, 
+  getPaymentDetail  } from '../services/finance.service';
 
 const PayPalIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -45,24 +49,10 @@ const brandColors = {
   paypal: { income: '#0070ba', volume: '#003087' },
 };
 
-const chartData = [
-  { fecha: '01 Abr', all_ingresos: 4500, all_transacciones: 120, tarjeta_ingresos: 3375, tarjeta_transacciones: 90, paypal_ingresos: 1125, paypal_transacciones: 30 },
-  { fecha: '02 Abr', all_ingresos: 5200, all_transacciones: 145, tarjeta_ingresos: 3900, tarjeta_transacciones: 109, paypal_ingresos: 1300, paypal_transacciones: 36 },
-  { fecha: '03 Abr', all_ingresos: 4800, all_transacciones: 130, tarjeta_ingresos: 3600, tarjeta_transacciones: 98, paypal_ingresos: 1200, paypal_transacciones: 32 },
-  { fecha: '04 Abr', all_ingresos: 6100, all_transacciones: 160, tarjeta_ingresos: 4575, tarjeta_transacciones: 120, paypal_ingresos: 1525, paypal_transacciones: 40 },
-  { fecha: '05 Abr', all_ingresos: 5900, all_transacciones: 155, tarjeta_ingresos: 4425, tarjeta_transacciones: 116, paypal_ingresos: 1475, paypal_transacciones: 39 },
-  { fecha: '06 Abr', all_ingresos: 7500, all_transacciones: 190, tarjeta_ingresos: 5625, tarjeta_transacciones: 143, paypal_ingresos: 1875, paypal_transacciones: 47 },
-  { fecha: '07 Abr', all_ingresos: 8200, all_transacciones: 210, tarjeta_ingresos: 6150, tarjeta_transacciones: 158, paypal_ingresos: 2050, paypal_transacciones: 52 },
-];
-
-const providerData = [
-  { id: 'tarjeta', nombre: 'Tarjeta (Credito/Debito)', valor: 75, color: brandColors.tarjeta.income, Icon: CreditCard },
-  { id: 'paypal', nombre: 'Billetera (PayPal)', valor: 25, color: brandColors.paypal.income, Icon: PayPalIcon },
-];
-
 const providerFilterMap = {
   tarjeta: 'card',
   paypal: 'paypal',
+  qr: 'qr'
 };
 
 const providerLabelMap = {
@@ -146,9 +136,32 @@ export default function Finance({ onToggleSidebar }) {
   const [selectedPaymentDetail, setSelectedPaymentDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState('');
-
+  const [chartData, setChartData] = useState([]);
+  const [providersData, setProvidersData] = useState([]);
+  const [error, setError] = useState(null);
   const dropdownRef = useRef(null);
-
+  const providerData = providersData
+  .filter(p => ['card', 'paypal', 'qr'].includes(p.proveedor))
+  .map(p => ({
+    id: p.proveedor === 'card' ? 'tarjeta' : p.proveedor,
+    nombre:
+      p.proveedor === 'card'
+        ? 'Tarjeta (Credito/Debito)'
+        : p.proveedor === 'paypal'
+        ? 'Billetera (PayPal)'
+        : 'QR',
+    valor: p.porcentaje,
+    color:
+      p.proveedor === 'paypal'
+        ? '#0070ba'
+        : p.proveedor === 'qr'
+        ? '#22d3ee'
+        : '#e6ff2a',
+    Icon:
+      p.proveedor === 'paypal'
+        ? PayPalIcon
+        : CreditCard,
+  }));
   const formatCurrency = (value, currency = 'BOB') => {
     const safeValue = Number(value || 0);
     try {
@@ -165,19 +178,29 @@ export default function Finance({ onToggleSidebar }) {
   const activeIncomeColor = brandColors[selectedProvider].income;
   const activeVolumeColor = brandColors[selectedProvider].volume;
   const activeChartColor = chartView === 'ingresos' ? activeIncomeColor : activeVolumeColor;
-  const activeDataKey = `${selectedProvider}_${chartView}`;
+  const activeDataKey =
+  chartView === 'ingresos'
+    ? 'ingresos'
+    : 'transacciones';
 
-  const currentKPIs = kpis
-    ? {
-        volumen: kpis.volumenProcesado?.valor || 0,
-        transacciones: kpis.pagosExitosos?.valor || 0,
-        ticket: kpis.ticketPromedio?.valor || 0,
-        volCrec: kpis.volumenProcesado?.crecimientoPorcentaje || 0,
-        txnCrec: kpis.pagosExitosos?.crecimientoPorcentaje || 0,
-        tkCrec: kpis.ticketPromedio?.crecimientoPorcentaje || 0,
-      }
-    : { volumen: 0, transacciones: 0, ticket: 0, volCrec: 0, txnCrec: 0, tkCrec: 0 };
-
+ const currentKPIs = kpis
+  ? {
+      volumen: kpis.ingresos,
+      transacciones: kpis.transacciones,
+      ticket: kpis.ticketPromedio,
+      volCrec: kpis.volCrec || 0,
+      txnCrec: kpis.txnCrec || 0,
+      tkCrec: kpis.tkCrec || 0,
+    }
+  : {
+      volumen: 0,
+      transacciones: 0,
+      ticket: 0,
+      volCrec: 0,
+      txnCrec: 0,
+      tkCrec: 0,
+    };
+    
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -198,20 +221,28 @@ export default function Finance({ onToggleSidebar }) {
   }, [searchPaymentId]);
 
   useEffect(() => {
-    const fetchKpis = async () => {
-      try {
-        setLoading(true);
-        const res = await getKpis(timeRange);
-        setKpis(res.data);
-      } catch (error) {
-        console.error('Error cargando KPIs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    fetchKpis();
-  }, [timeRange]);
+      const res = await getDashboard({ range: timeRange });
+      const dashboard = res.data ?? res;
+
+      setKpis(dashboard.kpis);
+      setChartData(dashboard.chart);
+      setProvidersData(dashboard.providers);
+
+    } catch (err) {
+      console.error(err);
+      setError('No se pudieron cargar los KPIs financieros');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDashboard();
+}, [timeRange]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -269,83 +300,14 @@ export default function Finance({ onToggleSidebar }) {
     }
   };
 
-  const exportToExcel = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Reporte Financiero');
-
-    worksheet.columns = [
-      { header: 'Fecha', key: 'fecha', width: 15 },
-      { header: `Ingresos (${selectedProvider.toUpperCase()})`, key: 'ingresos', width: 25 },
-      { header: `Transacciones (${selectedProvider.toUpperCase()})`, key: 'transacciones', width: 25 },
-    ];
-
-    const headerRow = worksheet.getRow(1);
-    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0C4651' } };
-    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
-
-    chartData.forEach((item) => {
-      worksheet.addRow({
-        fecha: item.fecha,
-        ingresos: item[`${selectedProvider}_ingresos`],
-        transacciones: item[`${selectedProvider}_transacciones`],
-      });
-    });
-
-    worksheet.eachRow((row, rowNumber) => {
-      row.eachCell((cell) => {
-        cell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' },
-        };
-        if (rowNumber > 1) {
-          cell.alignment = { horizontal: 'center' };
-        }
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `FrogPay_${selectedProvider}_${timeRange}.xlsx`);
-    setIsExportMenuOpen(false);
-  };
-
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFillColor(4, 10, 11);
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Reporte Financiero', 14, 20);
-    doc.setTextColor(230, 255, 42);
-    doc.setFontSize(12);
-    doc.text('FrogPay SaaS', 14, 28);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text(`Actividad: ${selectedProvider.toUpperCase()} (${timeRange})`, 14, 55);
-
-    const tableColumn = ['Fecha', 'Ingresos (Bs)', 'Transacciones'];
-    const tableRows = chartData.map((data) => [
-      data.fecha,
-      formatCurrency(data[`${selectedProvider}_ingresos`]),
-      data[`${selectedProvider}_transacciones`].toString(),
-    ]);
-
-    autoTable(doc, {
-      startY: 65,
-      head: [tableColumn],
-      body: tableRows,
-      theme: 'striped',
-      headStyles: { fillColor: [12, 70, 81], textColor: [255, 255, 255] },
-      styles: { fontSize: 10, cellPadding: 6 },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-    });
-
-    doc.save(`FrogPay_${selectedProvider}_${timeRange}.pdf`);
-    setIsExportMenuOpen(false);
-  };
+  const exportToExcel = () => {
+  exportDashboardExcel({ range: timeRange });
+  setIsExportMenuOpen(false);
+};
+ const exportToPDF = () => {
+  exportDashboardPDF({ range: timeRange });
+  setIsExportMenuOpen(false);
+};
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
