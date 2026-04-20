@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import {
   CreditCard, Zap, CheckCircle2, XCircle, Loader2,
   Terminal, Lock, AlertCircle, ChevronRight, ArrowLeft,
+  QrCode, Smartphone, RefreshCw,
 } from 'lucide-react';
+import StripeCardCheckout from '../components/StripeCardCheckout.jsx';
+import { getStoredApiKey } from '../services/tenantKey.js';
+import { getCurrencyConfig } from '../services/currency.service.js';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-const API_KEY     = import.meta.env.VITE_API_KEY     || 'fp_live_demo_key_for_testing';
 const AMOUNT      = 50.00;
 
 // ── Tarjetas de prueba ─────────────────────────────────────────────────────────
@@ -79,7 +82,7 @@ function LogEntry({ entry, index }) {
 }
 
 // ── Tab: Tarjeta Simulada ──────────────────────────────────────────────────────
-function CardTab({ backendOk }) {
+function CardTab({ backendOk, currency }) {
   const [cardNumber, setCardNumber] = useState('');
   const [expiry,     setExpiry]     = useState('');
   const [cvv,        setCvv]        = useState('');
@@ -141,11 +144,11 @@ function CardTab({ backendOk }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
         body: JSON.stringify({
-          provider: 'mock',
+          provider: 'card',
           amount: AMOUNT,
-          currency: 'USD',
+          currency,
           description: 'Demo tarjeta simulada — FrogPay',
-          cardNumber: rawNumber,
+          paymentToken: rawNumber,
         }),
       });
       backendStatus = res.status;
@@ -171,9 +174,9 @@ function CardTab({ backendOk }) {
       payload: {
         payment_id: backendBody.payment_id ?? backendBody.transactionId ?? null,
         amount: AMOUNT,
-        currency: 'USD',
+            currency,
         status: backendBody.estado ?? (isApproved ? 'COMPLETED' : 'FAILED'),
-        provider: 'mock',
+        provider: 'card',
         card_last4: rawNumber.slice(-4),
         ...(backendBody.raw && { detail: backendBody.raw }),
       },
@@ -332,7 +335,7 @@ function CardTab({ backendOk }) {
 }
 
 // ── Tab: PayPal (flujo real 3 pasos) ──────────────────────────────────────────
-function PayPalTab({ backendOk, initialOrderId }) {
+function PayPalTab({ backendOk, initialOrderId, currency }) {
   // paso: 'idle' | 'created' | 'approved' | 'done'
   const [step,         setStep]         = useState(initialOrderId ? 'approved' : 'idle');
   const [isLoading,    setIsLoading]    = useState(false);
@@ -347,7 +350,7 @@ function PayPalTab({ backendOk, initialOrderId }) {
       const res = await fetch(`${BACKEND_URL}/api/payments/paypal/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
-        body: JSON.stringify({ amount: AMOUNT, currency: 'USD', description: 'Demo FrogPay — PayPal' }),
+        body: JSON.stringify({ amount: AMOUNT, currency, description: 'Demo FrogPay — PayPal' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
@@ -536,11 +539,199 @@ function PayPalTab({ backendOk, initialOrderId }) {
   );
 }
 
+// ── Tab: Pago QR ──────────────────────────────────────────────────────────────
+function QRTab({ backendOk }) {
+  const [phase, setPhase]         = useState('idle');   // idle | loading | pending | done
+  const [qrCode, setQrCode]       = useState(null);
+  const [qrUrl, setQrUrl]         = useState(null);
+  const [paymentId, setPaymentId] = useState(null);
+  const [result, setResult]       = useState(null);     // 'APROBADO' | 'CANCELADO'
+  const [resultMsg, setResultMsg] = useState('');
+  const [pollMsg, setPollMsg]     = useState('Esperando confirmacion desde el celular...');
+  const pollingRef                = useRef(null);
+
+  const stopPolling = () => {
+    if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; }
+  };
+
+  useEffect(() => () => stopPolling(), []);
+
+  const startPolling = (pid) => {
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/qr/${pid}/status`);
+        const data = await res.json();
+        if (data.status === 'COMPLETED') {
+          stopPolling();
+          setResult('APROBADO');
+          setResultMsg('Pago confirmado desde el dispositivo.');
+          setPhase('done');
+        } else if (data.status === 'FAILED') {
+          stopPolling();
+          setResult('CANCELADO');
+          setResultMsg('El pago fue cancelado.');
+          setPhase('done');
+        }
+      } catch (_) {}
+    }, 3000);
+  };
+
+  const handleGenerate = async () => {
+    if (!backendOk) return;
+    const apiKey = getStoredApiKey();
+    setPhase('loading');
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/payments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey && { 'x-api-key': apiKey }),
+        },
+        body: JSON.stringify({ monto: AMOUNT, moneda: 'USD', proveedor: 'qr' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+
+      setPaymentId(data.payment_id);
+      setQrCode(data.qr_code);
+      setQrUrl(data.qr_url);
+      setPhase('pending');
+      startPolling(data.payment_id);
+    } catch (err) {
+      setResult('CANCELADO');
+      setResultMsg(err.message);
+      setPhase('done');
+    }
+  };
+
+  const handleReset = () => {
+    stopPolling();
+    setPhase('idle');
+    setQrCode(null);
+    setQrUrl(null);
+    setPaymentId(null);
+    setResult(null);
+    setResultMsg('');
+    setPollMsg('Esperando confirmacion desde el celular...');
+  };
+
+  return (
+    <div className="max-w-md mx-auto space-y-5">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 space-y-5">
+
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#1e293b] flex items-center justify-center">
+            <QrCode size={20} className="text-[#e6ff2a]" />
+          </div>
+          <div>
+            <p className="font-bold text-white">Pago con QR</p>
+            <p className="text-xs text-gray-500">Simulado — Escanea con tu celular</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-white/10 pt-4">
+          <span className="text-gray-400 text-sm">Total a pagar</span>
+          <span className="text-white font-black text-xl">${AMOUNT.toFixed(2)} USD</span>
+        </div>
+
+        {/* Estado: idle */}
+        {phase === 'idle' && (
+          <button
+            onClick={handleGenerate}
+            disabled={!backendOk}
+            className={`w-full h-12 rounded-xl font-black text-base transition-all duration-300 flex items-center justify-center gap-2
+              ${!backendOk
+                ? 'bg-white/5 text-gray-600 cursor-not-allowed border border-white/10'
+                : 'bg-[#e6ff2a] text-[#04181C] hover:bg-[#b7f758] shadow-[0_8px_20px_rgba(230,255,42,0.2)] hover:-translate-y-0.5 active:scale-95'
+              }`}
+          >
+            <QrCode size={18} /> Generar QR de pago
+          </button>
+        )}
+
+        {/* Estado: loading */}
+        {phase === 'loading' && (
+          <div className="flex flex-col items-center gap-3 py-4">
+            <Loader2 size={32} className="animate-spin text-[#e6ff2a]" />
+            <p className="text-sm text-gray-400">Generando QR...</p>
+          </div>
+        )}
+
+        {/* Estado: pending — muestra QR */}
+        {phase === 'pending' && qrCode && (
+          <div className="space-y-4">
+            <div className="flex flex-col items-center gap-3">
+              <div className="p-3 bg-white rounded-2xl">
+                <img src={qrCode} alt="QR de pago" className="w-48 h-48" />
+              </div>
+              <p className="text-xs text-gray-500 text-center">
+                Escanea con tu celular o abre el enlace
+              </p>
+              <a
+                href={qrUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-[#e6ff2a] hover:text-white transition-colors border border-[#e6ff2a]/30 rounded-lg px-3 py-2"
+              >
+                <Smartphone size={14} /> Abrir pagina de pago
+              </a>
+            </div>
+
+            {/* Indicador de polling */}
+            <div className="flex items-center gap-2 rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3">
+              <RefreshCw size={14} className="animate-spin text-yellow-400 shrink-0" />
+              <p className="text-xs text-yellow-300">{pollMsg}</p>
+            </div>
+          </div>
+        )}
+
+        {!backendOk && phase === 'idle' && (
+          <p className="text-xs text-red-400 flex items-center gap-1.5">
+            <AlertCircle size={13} /> Backend no disponible en {BACKEND_URL}
+          </p>
+        )}
+      </div>
+
+      {/* Resultado */}
+      {phase === 'done' && result && (
+        <div className={`rounded-2xl border p-5 space-y-3 ${
+          result === 'APROBADO' ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'
+        }`}>
+          <div className="flex items-center gap-4">
+            {result === 'APROBADO'
+              ? <CheckCircle2 size={32} className="text-green-400 shrink-0" />
+              : <XCircle size={32} className="text-red-400 shrink-0" />}
+            <div>
+              <p className={`text-2xl font-black ${result === 'APROBADO' ? 'text-green-400' : 'text-red-400'}`}>
+                {result}
+              </p>
+              <p className="text-sm text-gray-400 mt-0.5">{resultMsg}</p>
+            </div>
+          </div>
+          <button onClick={handleReset} className="text-xs text-gray-500 hover:text-white transition-colors">
+            Generar nuevo QR
+          </button>
+        </div>
+      )}
+
+      <p className="text-xs text-gray-600 text-center">
+        El QR redirige a una pagina de simulacion. En produccion apuntaria a la app del banco.
+      </p>
+    </div>
+  );
+}
+
 // ── Página Principal ───────────────────────────────────────────────────────────
 export default function PaymentDemo() {
-  const [activeTab,           setActiveTab]           = useState('card');
+  const apiKey = getStoredApiKey();
+  const [activeTab,           setActiveTab]           = useState('stripe');
   const [backendStatus,       setBackendStatus]       = useState(null);
   const [initialPaypalOrder,  setInitialPaypalOrder]  = useState(null);
+  const [stripeConfig,        setStripeConfig]        = useState({ publishableKey: '', enabled: false });
+  const [paymentCurrency,     setPaymentCurrency]     = useState('USD');
+  const [stripeResult,        setStripeResult]        = useState(null);
 
   // Detectar retorno de PayPal: ?token=ORDER_ID&PayerID=...
   useEffect(() => {
@@ -571,6 +762,54 @@ export default function PaymentDemo() {
     const id = setInterval(check, 6000);
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (!apiKey) {
+      setStripeConfig({ publishableKey: '', enabled: false });
+      setPaymentCurrency('USD');
+      return;
+    }
+
+    const loadStripeConfig = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/payments/config/stripe`, {
+          headers: { 'x-api-key': apiKey },
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setStripeConfig(payload);
+          return;
+        }
+        setStripeConfig({ publishableKey: '', enabled: false });
+      } catch (_error) {
+        setStripeConfig({ publishableKey: '', enabled: false });
+      }
+    };
+
+    loadStripeConfig();
+  }, [apiKey]);
+
+  useEffect(() => {
+    if (!apiKey) {
+      return;
+    }
+
+    const loadCurrencyConfig = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/payments/currency-config`, {
+          headers: { 'x-api-key': apiKey },
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setPaymentCurrency(payload?.data?.selectedCurrency || payload?.data?.baseCurrency || 'USD');
+        }
+      } catch (_error) {
+        setPaymentCurrency('USD');
+      }
+    };
+
+    loadCurrencyConfig();
+  }, [apiKey]);
 
   const backendOk = backendStatus?.ok !== false;
 
@@ -603,7 +842,7 @@ export default function PaymentDemo() {
           </h1>
           <p className="text-gray-400 text-sm max-w-xl mx-auto">
             Prueba el flujo completo: validación, tokenización, request al backend y webhook simulado.
-            Monto fijo de <strong className="text-white">${AMOUNT.toFixed(2)} USD</strong>.
+            Monto fijo de <strong className="text-white">{AMOUNT.toFixed(2)} {paymentCurrency}</strong>.
           </p>
 
           {/* Estado del backend */}
@@ -622,6 +861,16 @@ export default function PaymentDemo() {
         {/* Tabs */}
         <div className="glass-iphone rounded-[2rem] border border-white/10 bg-white/[0.02] p-6 sm:p-8">
           <div className="flex gap-1 mb-8 bg-white/[0.04] rounded-xl p-1">
+            <button
+              onClick={() => setActiveTab('stripe')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
+                activeTab === 'stripe'
+                  ? 'bg-[#e6ff2a] text-[#04181C] shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <CreditCard size={15} /> Tarjeta (Stripe real)
+            </button>
             <button
               onClick={() => setActiveTab('card')}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
@@ -642,12 +891,44 @@ export default function PaymentDemo() {
             >
               <span className="font-black text-base leading-none">P</span> PayPal
             </button>
+            <button
+              onClick={() => setActiveTab('qr')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
+                activeTab === 'qr'
+                  ? 'bg-[#e6ff2a] text-[#04181C] shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <QrCode size={15} /> QR
+            </button>
           </div>
 
-          {activeTab === 'card'
-            ? <CardTab backendOk={backendOk} />
-            : <PayPalTab backendOk={backendOk} initialOrderId={initialPaypalOrder} />
-          }
+          {activeTab === 'stripe' && (
+            <div className="space-y-4">
+              <StripeCardCheckout
+                backendUrl={BACKEND_URL}
+                apiKey={apiKey}
+                amount={AMOUNT}
+                currency={paymentCurrency}
+                publishableKey={stripeConfig.publishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''}
+                onResult={setStripeResult}
+              />
+
+              {stripeResult && (
+                <div className={`rounded-xl border p-4 text-sm ${stripeResult.ok ? 'border-green-500/40 bg-green-500/10 text-green-300' : 'border-red-500/40 bg-red-500/10 text-red-300'}`}>
+                  {stripeResult.ok ? (
+                    <span className="inline-flex items-center gap-2"><CheckCircle2 size={16} /> {stripeResult.message}</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2"><XCircle size={16} /> {stripeResult.message}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'card' && <CardTab backendOk={backendOk} />}
+          {activeTab === 'paypal' && <PayPalTab backendOk={backendOk} initialOrderId={initialPaypalOrder} />}
+          {activeTab === 'qr' && <QRTab backendOk={backendOk} />}
         </div>
 
         {/* Info tarjetas de prueba */}

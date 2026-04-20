@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
+import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   BarChart, Bar, Cell
 } from 'recharts';
-import {
-  DollarSign, Activity, TrendingUp, Download, ArrowUpRight, ArrowDownRight,
+import { 
+  DollarSign, Activity, TrendingUp, Download, ArrowUpRight, ArrowDownRight, 
   CreditCard, FileText, FileSpreadsheet, ChevronDown, FilterX, Menu
 } from 'lucide-react';
 
@@ -12,50 +12,46 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { getKpis, getChart } from '../services/finance.service';
+import { getKpis } from '../services/finance.service';
+
 // --- SVGs DE MARCAS INTEGADOS ---
-const StripeIcon = () => (
-  <svg viewBox="0 0 60 25" className="h-4 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
-    <path d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.86-.27 3.76-.51v4.22c-1.35.51-3.26.85-5.52.85-5.32 0-8.52-3.23-8.52-8.68 0-5.74 3.39-8.81 8.23-8.81 5.34 0 7.37 3.93 7.37 7.76 0 .89-.04 1.76-.09 2.62zm-6.84-2.22c-.08-1.48-1.07-2.3-2.58-2.3-1.66 0-2.67.92-2.91 2.3h5.49zM38.16 3.86V21h-4.88V3.86h4.88zM27.24 8.24c-1.39-1.2-3.14-1.52-4.66-1.52-2.48 0-4.04 1.05-4.04 2.64 0 1.54 1.48 2.05 3.65 2.58 2.92.68 5.62 1.65 5.62 5.09 0 3.76-3.16 5.86-7.55 5.86-2.52 0-4.96-.64-6.8-1.58V16.8c1.88 1.13 4.22 1.67 6.27 1.67 2.76 0 4.14-.98 4.14-2.6 0-1.58-1.3-2.07-3.8-2.67-2.94-.7-5.45-1.78-5.45-5.02 0-3.5 3.03-5.73 7.15-5.73 2.18 0 4.38.53 5.92 1.39v4.4zM49.62 3.86v17.14h-4.88v-1.77c-1.34 1.41-3.14 2.11-5.26 2.11-4.14 0-7.39-3.37-7.39-8.63 0-5.34 3.29-8.83 7.5-8.83 2.01 0 3.72.68 4.92 2.01V3.86h5.11zm-5.06 8.85c0-2.88-1.88-4.72-4.42-4.72-2.5 0-4.44 1.86-4.44 4.74 0 2.82 1.94 4.66 4.46 4.66 2.52 0 4.4-1.84 4.4-4.68zM15.42 21h-4.88V3.86h4.88V21zM5.7 6.44h4.75V21H5.7V6.44z" />
-  </svg>
-);
-
 const PayPalIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
-    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zM6.92 2h-1.51L2.298 21.337h1.51L6.92 2zM19.143 6.097c-1.112-1.267-3.12-1.81-5.69-1.81H5.998L2.886 23.411H7.49l.643-4.08h2.19c4.298 0 7.664-1.748 8.647-6.797.03-.15.054-.294.077-.437.292-1.867-.002-3.137-1.012-4.287z" />
-  </svg>
-);
-
-const CryptoIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12.003 2.005l-4.116 4.116 1.808 1.808 2.308-2.308 2.308 2.308 1.808-1.808-4.116-4.116zm-7.932 7.93L2.005 12l2.066 2.065 1.808-1.808-1.045-1.046 1.045-1.046-1.808-1.808zm15.864 0l-1.808 1.808 1.045 1.046-1.045 1.046 1.808 1.808L21.995 12l-2.06-2.065zM12.003 6.643l-5.358 5.357 5.358 5.358 5.358-5.358-5.358-5.357zm0 2.553l2.805 2.804-2.805 2.805-2.805-2.805 2.805-2.804zm0 8.521l-2.308 2.308-1.808-1.808 4.116 4.116 4.116-4.116-1.808-1.808-2.308 2.308z" />
+  <svg viewBox="0 0 24 24" className="h-4 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zM6.92 2h-1.51L2.298 21.337h1.51L6.92 2zM19.143 6.097c-1.112-1.267-3.12-1.81-5.69-1.81H5.998L2.886 23.411H7.49l.643-4.08h2.19c4.298 0 7.664-1.748 8.647-6.797.03-.15.054-.294.077-.437.292-1.867-.002-3.137-1.012-4.287z"/>
   </svg>
 );
 
 // --- COLORES CORPORATIVOS ESTRICTOS ---
 const brandColors = {
-  all: { income: '#e6ff2a', volume: '#0c4651' },
-  stripe: { income: '#635BFF', volume: '#3A35A3' },
-  paypal: { income: '#0070ba', volume: '#003087' },
-  cripto: { income: '#F3BA2F', volume: '#C99400' }
+  all:     { income: '#e6ff2a', volume: '#0c4651' }, // Default FrogPay
+  tarjeta: { income: '#e6ff2a', volume: '#0c4651' }, // Tarjetas usan los colores de FrogPay
+  paypal:  { income: '#0070ba', volume: '#003087' }  // PayPal usa sus azules clásicos
 };
 
+// --- DATOS MOCK DE GRÁFICOS ---
 const chartData = [
-  { fecha: '01 Abr', all_ingresos: 4500, all_transacciones: 120, stripe_ingresos: 2925, stripe_transacciones: 78, paypal_ingresos: 1125, paypal_transacciones: 30, cripto_ingresos: 450, cripto_transacciones: 12 },
-  { fecha: '02 Abr', all_ingresos: 5200, all_transacciones: 145, stripe_ingresos: 3380, stripe_transacciones: 94, paypal_ingresos: 1300, paypal_transacciones: 36, cripto_ingresos: 520, cripto_transacciones: 15 },
-  { fecha: '03 Abr', all_ingresos: 4800, all_transacciones: 130, stripe_ingresos: 3120, stripe_transacciones: 85, paypal_ingresos: 1200, paypal_transacciones: 32, cripto_ingresos: 480, cripto_transacciones: 13 },
-  { fecha: '04 Abr', all_ingresos: 6100, all_transacciones: 160, stripe_ingresos: 3965, stripe_transacciones: 104, paypal_ingresos: 1525, paypal_transacciones: 40, cripto_ingresos: 610, cripto_transacciones: 16 },
-  { fecha: '05 Abr', all_ingresos: 5900, all_transacciones: 155, stripe_ingresos: 3835, stripe_transacciones: 101, paypal_ingresos: 1475, paypal_transacciones: 39, cripto_ingresos: 590, cripto_transacciones: 15 },
-  { fecha: '06 Abr', all_ingresos: 7500, all_transacciones: 190, stripe_ingresos: 4875, stripe_transacciones: 124, paypal_ingresos: 1875, paypal_transacciones: 47, cripto_ingresos: 750, cripto_transacciones: 19 },
-  { fecha: '07 Abr', all_ingresos: 8200, all_transacciones: 210, stripe_ingresos: 5330, stripe_transacciones: 137, paypal_ingresos: 2050, paypal_transacciones: 52, cripto_ingresos: 820, cripto_transacciones: 21 },
+  { fecha: '01 Abr', all_ingresos: 4500, all_transacciones: 120, tarjeta_ingresos: 3375, tarjeta_transacciones: 90, paypal_ingresos: 1125, paypal_transacciones: 30 },
+  { fecha: '02 Abr', all_ingresos: 5200, all_transacciones: 145, tarjeta_ingresos: 3900, tarjeta_transacciones: 109, paypal_ingresos: 1300, paypal_transacciones: 36 },
+  { fecha: '03 Abr', all_ingresos: 4800, all_transacciones: 130, tarjeta_ingresos: 3600, tarjeta_transacciones: 98, paypal_ingresos: 1200, paypal_transacciones: 32 },
+  { fecha: '04 Abr', all_ingresos: 6100, all_transacciones: 160, tarjeta_ingresos: 4575, tarjeta_transacciones: 120, paypal_ingresos: 1525, paypal_transacciones: 40 },
+  { fecha: '05 Abr', all_ingresos: 5900, all_transacciones: 155, tarjeta_ingresos: 4425, tarjeta_transacciones: 116, paypal_ingresos: 1475, paypal_transacciones: 39 },
+  { fecha: '06 Abr', all_ingresos: 7500, all_transacciones: 190, tarjeta_ingresos: 5625, tarjeta_transacciones: 143, paypal_ingresos: 1875, paypal_transacciones: 47 },
+  { fecha: '07 Abr', all_ingresos: 8200, all_transacciones: 210, tarjeta_ingresos: 6150, tarjeta_transacciones: 158, paypal_ingresos: 2050, paypal_transacciones: 52 },
 ];
 
 const providerData = [
-  { id: 'stripe', nombre: 'Tarjetas (Stripe)', valor: 65, color: brandColors.stripe.income, Icon: StripeIcon },
-  { id: 'paypal', nombre: 'Billeteras (PayPal)', valor: 25, color: brandColors.paypal.income, Icon: PayPalIcon },
-  { id: 'cripto', nombre: 'Cripto (Binance)', valor: 10, color: brandColors.cripto.income, Icon: CryptoIcon },
+  { id: 'tarjeta', nombre: 'Tarjeta (Crédito/Débito)', valor: 75, color: brandColors.tarjeta.income, Icon: CreditCard },
+  { id: 'paypal', nombre: 'Billetera (PayPal)', valor: 25, color: brandColors.paypal.income, Icon: PayPalIcon },
 ];
 
+// --- DATOS MOCK: ÚLTIMAS TRANSACCIONES (Basado en DB) ---
+const recentTransactions = [
+  { id: 'txn_9A8b7C6d', monto: 150.00, moneda: 'BOB', estado: 'COMPLETED', proveedor: 'tarjeta', ultimos_cuatro: '4242', red: 'Visa', fecha: '2026-04-14 14:30' },
+  { id: 'txn_3F4e5D2a', monto: 45.50, moneda: 'BOB', estado: 'COMPLETED', proveedor: 'paypal', ultimos_cuatro: null, red: null, fecha: '2026-04-14 13:15' },
+  { id: 'txn_7G8h9J0k', monto: 320.00, moneda: 'BOB', estado: 'FAILED', proveedor: 'tarjeta', ultimos_cuatro: '0004', red: 'Mastercard', fecha: '2026-04-14 11:45' },
+  { id: 'txn_1M2n3P4q', monto: 85.00, moneda: 'BOB', estado: 'COMPLETED', proveedor: 'tarjeta', ultimos_cuatro: '1234', red: 'Visa', fecha: '2026-04-14 09:20' },
+  { id: 'txn_5R6s7T8u', monto: 12.00, moneda: 'USD', estado: 'COMPLETED', proveedor: 'paypal', ultimos_cuatro: null, red: null, fecha: '2026-04-13 18:05' },
+];
 
 // IMPORTANTE: Recibimos la prop onToggleSidebar desde App.jsx
 export default function Finance({ onToggleSidebar }) {
@@ -78,18 +74,16 @@ export default function Finance({ onToggleSidebar }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB', maximumFractionDigits: 0 }).format(value);
+  const formatCurrency = (value, currency = 'BOB') => {
+    return new Intl.NumberFormat('es-BO', { style: 'currency', currency: currency, maximumFractionDigits: 2 }).format(value);
   };
+
   useEffect(() => {
     const fetchKpis = async () => {
       try {
         setLoading(true);
-
-        const res = await getKpis(timeRange);
-
-        console.log("KPIS BACKEND:", res);
-
+        // Aquí idealmente pasaríamos selectedProvider al backend para filtrar
+        const res = await getKpis(timeRange); 
         setKpis(res.data);
       } catch (error) {
         console.error("Error cargando KPIs:", error);
@@ -97,15 +91,15 @@ export default function Finance({ onToggleSidebar }) {
         setLoading(false);
       }
     };
-
     fetchKpis();
   }, [timeRange]);
+
   const activeIncomeColor = brandColors[selectedProvider].income;
   const activeVolumeColor = brandColors[selectedProvider].volume;
   const activeChartColor = chartView === 'ingresos' ? activeIncomeColor : activeVolumeColor;
 
   const currentKPIs = kpis
-    ? {
+  ? {
       volumen: kpis.volumenProcesado?.valor || 0,
       transacciones: kpis.pagosExitosos?.valor || 0,
       ticket: kpis.ticketPromedio?.valor || 0,
@@ -113,19 +107,14 @@ export default function Finance({ onToggleSidebar }) {
       txnCrec: kpis.pagosExitosos?.crecimientoPorcentaje || 0,
       tkCrec: kpis.ticketPromedio?.crecimientoPorcentaje || 0
     }
-    : {
-      volumen: 0,
-      transacciones: 0,
-      ticket: 0,
-      volCrec: 0,
-      txnCrec: 0,
-      tkCrec: 0
-    };
+  : { volumen: 0, transacciones: 0, ticket: 0, volCrec: 0, txnCrec: 0, tkCrec: 0 };
+  
   const activeDataKey = `${selectedProvider}_${chartView}`;
+  
   if (loading) {
     return (
-      <div className="text-white flex justify-center items-center h-screen">
-        Cargando métricas...
+      <div className="text-[#e6ff2a] font-bold flex justify-center items-center h-screen animate-pulse">
+        Cargando métricas financieras...
       </div>
     );
   }
@@ -174,7 +163,7 @@ export default function Finance({ onToggleSidebar }) {
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.text('Reporte Financiero', 14, 20);
-    doc.setTextColor(230, 255, 42);
+    doc.setTextColor(230, 255, 42); 
     doc.setFontSize(12);
     doc.text('FrogPay SaaS', 14, 28);
     doc.setTextColor(0, 0, 0);
@@ -183,8 +172,8 @@ export default function Finance({ onToggleSidebar }) {
 
     const tableColumn = ["Fecha", "Ingresos (Bs)", "Transacciones"];
     const tableRows = chartData.map(data => [
-      data.fecha,
-      formatCurrency(data[`${selectedProvider}_ingresos`]),
+      data.fecha, 
+      formatCurrency(data[`${selectedProvider}_ingresos`]), 
       data[`${selectedProvider}_transacciones`].toString()
     ]);
 
@@ -219,10 +208,10 @@ export default function Finance({ onToggleSidebar }) {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-2rem)] w-full overflow-hidden p-4 sm:p-6 lg:p-8">
+    <div className="relative min-h-[calc(100vh-2rem)] w-full p-4 sm:p-6 lg:p-8">
 
-      {/* HEADER MÓVIL (Con botón Hamburguesa para el Sidebar) */}
-      <div className="flex items-center justify-between lg:hidden mb-6 bg-white/[0.02] border border-white/5 p-4 rounded-2xl backdrop-blur-xl">
+      {/* --- CORRECCIÓN CLAVE AQUÍ: Usamos `fixed top-4 left-4 right-4 z-[100]` en lugar de `sticky` --- */}
+      <div className="fixed top-4 left-4 right-4 z-[100] flex items-center justify-between lg:hidden bg-black/70 border border-white/10 p-4 rounded-2xl backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-black shadow-[0_0_15px_rgba(230,255,42,0.15)] border border-white/10">
             <span className="text-[#e6ff2a] font-bold">F</span>
@@ -231,7 +220,7 @@ export default function Finance({ onToggleSidebar }) {
             Frog<span className="text-[#e6ff2a]">Pay</span>
           </span>
         </div>
-        <button
+        <button 
           onClick={onToggleSidebar}
           className="p-2 bg-white/5 rounded-xl border border-white/10 text-white transition-colors hover:bg-white/10 focus:outline-none"
         >
@@ -239,7 +228,8 @@ export default function Finance({ onToggleSidebar }) {
         </button>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl space-y-6 sm:space-y-8">
+      {/* --- CORRECCIÓN CLAVE AQUÍ: Añadimos `pt-24 lg:pt-0` para que el contenido baje y no quede oculto detrás de la barra fixed --- */}
+      <div className="relative z-10 mx-auto max-w-7xl space-y-6 sm:space-y-8 pt-24 lg:pt-0">
 
         {/* ENCABEZADO DE SECCIÓN */}
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between animate-fade-in">
@@ -259,8 +249,9 @@ export default function Finance({ onToggleSidebar }) {
             <div className="flex items-center rounded-2xl border border-white/10 bg-white/[0.02] p-1 backdrop-blur-md shadow-lg">
               {['24h', '7d', '30d'].map((range) => (
                 <button key={range} onClick={() => setTimeRange(range)}
-                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none ${timeRange === range ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
+                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none ${
+                    timeRange === range ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
                 >
                   {range}
                 </button>
@@ -299,7 +290,7 @@ export default function Finance({ onToggleSidebar }) {
               <div className="mt-3 flex flex-wrap items-baseline gap-3">
                 <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">{formatCurrency(currentKPIs.volumen)}</h2>
                 <span className={`flex items-center text-sm font-bold border px-2.5 py-1 rounded-full ${currentKPIs.volCrec >= 0 ? 'text-[#e6ff2a] bg-[#e6ff2a]/10 border-[#e6ff2a]/20' : 'text-red-400 bg-red-400/10 border-red-400/20'}`}>
-                  {currentKPIs.volCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />}
+                  {currentKPIs.volCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />} 
                   {Math.abs(currentKPIs.volCrec)}%
                 </span>
               </div>
@@ -315,7 +306,7 @@ export default function Finance({ onToggleSidebar }) {
               <div className="mt-3 flex flex-wrap items-baseline gap-3">
                 <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">{currentKPIs.transacciones}</h2>
                 <span className={`flex items-center text-sm font-bold border px-2.5 py-1 rounded-full ${currentKPIs.txnCrec >= 0 ? 'text-[#e6ff2a] bg-[#e6ff2a]/10 border-[#e6ff2a]/20' : 'text-red-400 bg-red-400/10 border-red-400/20'}`}>
-                  {currentKPIs.txnCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />}
+                  {currentKPIs.txnCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />} 
                   {Math.abs(currentKPIs.txnCrec)}%
                 </span>
               </div>
@@ -333,7 +324,7 @@ export default function Finance({ onToggleSidebar }) {
                   {formatCurrency(currentKPIs.ticket)}
                 </h2>
                 <span className={`flex items-center text-sm font-bold border px-2.5 py-1 rounded-full ${currentKPIs.tkCrec >= 0 ? 'text-blue-400 bg-blue-400/10 border-blue-400/20' : 'text-red-400 bg-red-400/10 border-red-400/20'}`}>
-                  {currentKPIs.tkCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />}
+                  {currentKPIs.tkCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />} 
                   {Math.abs(currentKPIs.tkCrec)}%
                 </span>
               </div>
@@ -362,27 +353,26 @@ export default function Finance({ onToggleSidebar }) {
               </div>
             </div>
 
-            {/* Altura mínima añadida aquí para resolver problemas en móviles */}
             <div className="w-full min-h-[300px] sm:min-h-[350px] mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorDynamic" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={activeChartColor} stopOpacity={0.6} />
-                      <stop offset="95%" stopColor={activeChartColor} stopOpacity={0} />
+                      <stop offset="5%" stopColor={activeChartColor} stopOpacity={0.6}/>
+                      <stop offset="95%" stopColor={activeChartColor} stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                   <XAxis dataKey="fecha" stroke="#ffffff40" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                  <YAxis stroke="#ffffff40" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => chartView === 'ingresos' ? `Bs${val / 1000}k` : val} />
+                  <YAxis stroke="#ffffff40" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => chartView === 'ingresos' ? `Bs${val/1000}k` : val} />
                   <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#ffffff10', strokeWidth: 2 }} />
-                  <Area
-                    type="monotone"
-                    dataKey={activeDataKey}
-                    stroke={activeChartColor}
-                    strokeWidth={4}
-                    fillOpacity={1}
-                    fill="url(#colorDynamic)"
+                  <Area 
+                    type="monotone" 
+                    dataKey={activeDataKey} 
+                    stroke={activeChartColor} 
+                    strokeWidth={4} 
+                    fillOpacity={1} 
+                    fill="url(#colorDynamic)" 
                     isAnimationActive={true}
                     animationDuration={1500}
                     style={{ filter: `drop-shadow(0 4px 15px ${activeChartColor}30)` }}
@@ -396,7 +386,7 @@ export default function Finance({ onToggleSidebar }) {
           <div className="col-span-1 rounded-3xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 backdrop-blur-xl flex flex-col relative transition-all duration-500 hover:border-white/10 hover:shadow-[0_10px_50px_rgba(0,0,0,0.2)] w-full">
 
             {selectedProvider !== 'all' && (
-              <button
+              <button 
                 onClick={() => setSelectedProvider('all')}
                 className="absolute top-6 right-6 flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all animate-fade-in focus:outline-none"
               >
@@ -406,32 +396,31 @@ export default function Finance({ onToggleSidebar }) {
 
             <h3 className="text-xl font-bold text-white tracking-tight mb-8">Origen de Fondos</h3>
 
-            {/* Altura mínima ajustada para gráficos de barra */}
             <div className="w-full min-h-[250px] sm:h-[200px] mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={providerData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <XAxis type="number" hide />
                   <YAxis dataKey="nombre" type="category" hide />
-                  <RechartsTooltip cursor={false} contentStyle={{ display: 'none' }} />
-                  <Bar
-                    dataKey="valor"
-                    radius={[0, 6, 6, 0]}
-                    barSize={28}
-                    onClick={(data) => setSelectedProvider(data.id)}
-                    className="cursor-pointer outline-none focus:outline-none" // Elimina bordes focus
-                    activeBar={false} // Desactiva por completo el hover styling automático de recharts que causaba el borde
+                  <RechartsTooltip cursor={false} contentStyle={{display: 'none'}} />
+                  <Bar 
+                    dataKey="valor" 
+                    radius={[0, 6, 6, 0]} 
+                    barSize={32} 
+                    onClick={(data) => setSelectedProvider(data.id)} 
+                    className="cursor-pointer outline-none focus:outline-none"
+                    activeBar={false}
                   >
                     {providerData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.color}
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color} 
                         stroke="none"
                         className="outline-none focus:outline-none"
-                        style={{
+                        style={{ 
                           outline: 'none',
                           transition: 'opacity 0.4s ease',
-                          opacity: selectedProvider === 'all' || selectedProvider === entry.id ? 1 : 0.15
-                        }}
+                          opacity: selectedProvider === 'all' || selectedProvider === entry.id ? 1 : 0.15 
+                        }} 
                       />
                     ))}
                   </Bar>
@@ -446,19 +435,19 @@ export default function Finance({ onToggleSidebar }) {
                 const isSelected = selectedProvider === 'all' || selectedProvider === item.id;
 
                 return (
-                  <div
-                    key={item.id}
+                  <div 
+                    key={item.id} 
                     onClick={() => setSelectedProvider(selectedProvider === item.id ? 'all' : item.id)}
-                    className={`flex items-center justify-between group cursor-pointer p-3 -mx-3 rounded-2xl transition-all duration-300 ${selectedProvider === item.id ? 'bg-white/10 shadow-inner' : 'hover:bg-white/5'
-                      }`}
+                    className={`flex items-center justify-between group cursor-pointer p-3 -mx-3 rounded-2xl transition-all duration-300 ${
+                      selectedProvider === item.id ? 'bg-white/10 shadow-inner' : 'hover:bg-white/5'
+                    }`}
                   >
                     <div className="flex items-center gap-3">
-                      {/* LOGO DE MARCA CON COLORES REALES */}
-                      <div
-                        className="w-8 h-8 rounded-xl shadow-md flex items-center justify-center transition-transform duration-500 group-hover:scale-110"
-                        style={{ backgroundColor: item.color, color: item.id === 'cripto' || item.id === 'all' ? '#000' : '#fff' }}
+                      <div 
+                        className="w-8 h-8 rounded-xl shadow-md flex items-center justify-center transition-transform duration-500 group-hover:scale-110" 
+                        style={{ backgroundColor: item.color, color: item.id === 'all' ? '#000' : '#fff' }}
                       >
-                        <IconComponent />
+                         <IconComponent size={16} />
                       </div>
                       <span className={`text-sm font-bold transition-colors ${isSelected ? 'text-gray-200' : 'text-gray-600'}`}>
                         {item.nombre}
@@ -474,6 +463,60 @@ export default function Finance({ onToggleSidebar }) {
           </div>
 
         </div>
+
+        {/* ÚLTIMAS TRANSACCIONES */}
+        <div className="mt-8 rounded-3xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 backdrop-blur-xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_10px_50px_rgba(0,0,0,0.2)] w-full overflow-hidden animate-fade-in">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-white tracking-tight">Últimas Transacciones</h3>
+            <button className="text-sm font-bold text-[#e6ff2a] hover:text-[#c4d920] transition-colors focus:outline-none">
+              Ver historial completo
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-gray-500">
+                  <th className="p-4 font-medium whitespace-nowrap">ID Transacción</th>
+                  <th className="p-4 font-medium whitespace-nowrap">Fecha</th>
+                  <th className="p-4 font-medium whitespace-nowrap">Proveedor</th>
+                  <th className="p-4 font-medium whitespace-nowrap">Detalles de Pago</th>
+                  <th className="p-4 font-medium whitespace-nowrap">Estado</th>
+                  <th className="p-4 font-medium whitespace-nowrap text-right">Monto</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {recentTransactions.map((txn, idx) => (
+                  <tr key={idx} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="p-4 text-sm text-gray-400 font-mono">{txn.id}</td>
+                    <td className="p-4 text-sm text-gray-400 whitespace-nowrap">{txn.fecha}</td>
+                    <td className="p-4 text-sm">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border ${
+                        txn.proveedor === 'tarjeta' ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] border-[#e6ff2a]/20' : 'bg-[#0070ba]/10 text-[#0070ba] border-[#0070ba]/20'
+                      }`}>
+                        {txn.proveedor === 'tarjeta' ? <CreditCard size={14}/> : <PayPalIcon />}
+                        <span className="capitalize text-xs font-bold">{txn.proveedor}</span>
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm text-gray-300">
+                      {txn.proveedor === 'tarjeta' ? `**** ${txn.ultimos_cuatro} (${txn.red})` : 'Cuenta Vinculada'}
+                    </td>
+                    <td className="p-4 text-sm">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${
+                        txn.estado === 'COMPLETED' ? 'bg-lime-400/10 text-lime-400 border-lime-400/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
+                      }`}>
+                        {txn.estado}
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm font-bold text-white text-right whitespace-nowrap">
+                      {formatCurrency(txn.monto, txn.moneda)} {txn.moneda}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   );
