@@ -11,7 +11,7 @@ import PaymentDemo from "./pages/PaymentDemo.jsx";
 import LoginModal from './components/LoginModal.jsx';
 import RegisterModal from './components/RegisterModal.jsx';
 import { logout } from './services/auth.service.js';
-import { upgradePlan, downgradePlan } from './services/tenant.service.js';
+import { upgradePlan, downgradePlan, getTenantMe } from './services/tenant.service.js';
 
 import ApiKeys from "./pages/ApiKeys.jsx";
 import PayoutAccounts from "./pages/PayoutAccounts.jsx";
@@ -68,6 +68,15 @@ function App() {
     window.addEventListener('storage', onStorage);
     window.addEventListener('frogpay:auth-changed', syncAuthState);
 
+    // Sincronizar el plan real desde el Backend al cargar
+    if (isAuthenticated) {
+      getTenantMe()
+        .then(res => {
+          if (res?.plan) setCurrentPlan(res.plan.toUpperCase());
+        })
+        .catch(err => console.error("Error validando plan:", err));
+    }
+
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('frogpay:auth-changed', syncAuthState);
@@ -97,6 +106,10 @@ function App() {
       }
       return result;
     } catch (error) {
+      // Si el error dice que ya es Premium, sincronizamos el estado local
+      if (error.message?.includes('ya cuenta con el plan PREMIUM')) {
+        setCurrentPlan('PREMIUM');
+      }
       throw error;
     }
   };
@@ -110,6 +123,10 @@ function App() {
       }
       return result;
     } catch (error) {
+      // Si el error dice que ya es Freemium, sincronizamos el estado local
+      if (error.message?.includes('ya se encuentra en el plan FREEMIUM')) {
+        setCurrentPlan('FREEMIUM');
+      }
       throw error;
     }
   };

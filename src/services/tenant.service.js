@@ -26,3 +26,13 @@ export const downgradePlan = async () => {
   if (!token) throw new Error('No hay sesión activa.');
   return apiRequest('/tenants/downgrade', 'PUT', null, token);
 };
+
+/**
+ * Obtiene el uso de transacciones del tenant (útil para FREEMIUM).
+ */
+export const getTenantUsage = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay sesión activa.');
+  return apiRequest('/tenants/usage', 'GET', null, token);
+};
+

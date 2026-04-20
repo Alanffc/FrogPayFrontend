@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Terminal, Eye, EyeOff, Copy, Check, ShieldAlert, Menu, LogOut, AlertTriangle } from 'lucide-react';
 import { clearStoredApiKey, getStoredApiKey, maskApiKey } from '../services/tenantKey.js';
 
-export default function ApiKeys({ onToggleSidebar }) {
+export default function ApiKeys({ onToggleSidebar, currentPlan }) {
+  const isPremium = currentPlan === 'PREMIUM';
+  const navigate = useNavigate();
+
   const [apiKey, setApiKey] = useState(getStoredApiKey());
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);

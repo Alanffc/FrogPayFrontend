@@ -12,7 +12,10 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { useNavigate } from 'react-router-dom';
 import { getKpis } from '../services/finance.service';
+import { Lock, Sparkles, Home as HomeIcon } from 'lucide-react';
+
 
 // --- SVGs DE MARCAS INTEGADOS ---
 const PayPalIcon = () => (
@@ -54,15 +57,17 @@ const recentTransactions = [
 ];
 
 // IMPORTANTE: Recibimos la prop onToggleSidebar desde App.jsx
-export default function Finance({ onToggleSidebar }) {
-
+export default function Finance({ onToggleSidebar, currentPlan }) {
+  const isPremium = currentPlan === 'PREMIUM';
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const [timeRange, setTimeRange] = useState('7d');
   const [chartView, setChartView] = useState('ingresos');
   const [selectedProvider, setSelectedProvider] = useState('all');
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -115,6 +120,46 @@ export default function Finance({ onToggleSidebar }) {
     return (
       <div className="text-[#e6ff2a] font-bold flex justify-center items-center h-screen animate-pulse">
         Cargando métricas financieras...
+      </div>
+    );
+  }
+
+  // --- BLOQUEO PARA FREEMIUM ---
+  if (!isPremium) {
+    return (
+      <div className="relative min-h-[calc(100vh-2rem)] w-full flex items-center justify-center p-6">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(230,255,42,0.05),transparent_70%)] animate-pulse" />
+        </div>
+        
+        <div className="relative z-10 max-w-lg w-full rounded-[2.5rem] border border-white/10 bg-white/[0.02] p-10 backdrop-blur-2xl text-center shadow-2xl">
+          <div className="mx-auto w-20 h-20 rounded-3xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center mb-8">
+            <Lock size={40} className="text-yellow-400" />
+          </div>
+          
+          <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Acceso Premium</h2>
+          <p className="text-gray-400 leading-relaxed mb-10">
+            Para acceder a este tipo de métricas avanzadas y reportes financieros, 
+            debes actualizar tu plan a <span className="text-yellow-400 font-bold uppercase tracking-widest text-xs ml-1">Premium</span>.
+          </p>
+          
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={() => navigate('/dashboard/planes')}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#e6ff2a] to-[#b7f758] px-6 py-4 text-sm font-black text-[#04181C] shadow-[0_4px_20px_rgba(230,255,42,0.3)] hover:scale-[1.02] transition-all"
+            >
+              <Sparkles size={18} />
+              Actualizar a PREMIUM
+            </button>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm font-bold text-gray-300 hover:bg-white/10 transition-all"
+            >
+              <HomeIcon size={18} />
+              Más tarde (Volver a Inicio)
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

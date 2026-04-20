@@ -11,6 +11,7 @@ import { getCurrencyConfig } from '../services/currency.service.js';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 const AMOUNT      = 50.00;
+const API_KEY     = getStoredApiKey();
 
 // ── Tarjetas de prueba ─────────────────────────────────────────────────────────
 const TEST_CARDS = [
@@ -189,8 +190,13 @@ function CardTab({ backendOk, currency }) {
       setResultMsg(`Transacción #${(backendBody.payment_id ?? '').toString().slice(0, 8)}... procesada correctamente`);
     } else {
       setResult('RECHAZADO');
-      setResultMsg(backendBody.error ?? 'Pago rechazado por el proveedor');
+      if (backendStatus === 402 || backendBody.error === 'VOLUME_LIMIT_EXCEEDED') {
+        setResultMsg('La tienda ha excedido su límite mensual de transacciones ($50,000 USD). Por favor, contacte con el comercio.');
+      } else {
+        setResultMsg(backendBody.error ?? 'Pago rechazado por el proveedor');
+      }
     }
+
 
     setIsRunning(false);
   };
@@ -359,7 +365,11 @@ function PayPalTab({ backendOk, initialOrderId, currency }) {
       setStep('created');
     } catch (err) {
       setResult('RECHAZADO');
-      setResultMsg(err.message);
+      if (err.message.includes('VOLUME_LIMIT_EXCEEDED')) {
+        setResultMsg('La tienda ha excedido su límite mensual de transacciones ($50,000 USD). Por favor, contacte con el comercio.');
+      } else {
+        setResultMsg(err.message);
+      }
       setStep('done');
     } finally {
       setIsLoading(false);
@@ -381,9 +391,14 @@ function PayPalTab({ backendOk, initialOrderId, currency }) {
       setStep('done');
     } catch (err) {
       setResult('RECHAZADO');
-      setResultMsg(err.message);
+      if (err.message.includes('VOLUME_LIMIT_EXCEEDED')) {
+        setResultMsg('La tienda ha excedido su límite mensual de transacciones ($50,000 USD). Por favor, contacte con el comercio.');
+      } else {
+        setResultMsg(err.message);
+      }
       setStep('done');
     } finally {
+
       setIsLoading(false);
     }
   };
@@ -600,9 +615,14 @@ function QRTab({ backendOk }) {
       startPolling(data.payment_id);
     } catch (err) {
       setResult('CANCELADO');
-      setResultMsg(err.message);
+      if (err.message.includes('VOLUME_LIMIT_EXCEEDED')) {
+        setResultMsg('La tienda ha excedido su límite mensual de transacciones ($50,000 USD). Por favor, contacte con el comercio.');
+      } else {
+        setResultMsg(err.message);
+      }
       setPhase('done');
     }
+
   };
 
   const handleReset = () => {
