@@ -14,7 +14,8 @@ import { logout } from './services/auth.service.js';
 
 import ApiKeys from "./pages/ApiKeys.jsx";
 import PayoutAccounts from "./pages/PayoutAccounts.jsx";
-import Finance from "./pages/Finance.jsx"; // IMPORTACIÓN DEL NUEVO MÓDULO
+import Finance from "./pages/Finance.jsx";
+import Configuracion from "./pages/Configuracion.jsx";
 
 // --- COMPONENTE DE PROTECCIÓN DE RUTAS ---
 const ProtectedRoute = ({ isAuthenticated, children }) => {
@@ -178,6 +179,15 @@ function App() {
             <DashboardLayout Page={ApiKeys} /> 
           </ProtectedRoute>
         } 
+      />
+
+      <Route
+        path="/dashboard/configuracion"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <DashboardLayout Page={Configuracion} />
+          </ProtectedRoute>
+        }
       />
 
       <Route path="*" element={<Navigate to="/" replace />} />

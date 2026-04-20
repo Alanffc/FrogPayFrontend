@@ -9,7 +9,7 @@ const navItems = [
   { id: 'cuentas-cobro', label: 'Cuentas de Cobro', icon: CreditCard, path: '/dashboard/cuentas-cobro' },
   { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'api', label: 'API & Webhooks', icon: Terminal, path: '/dashboard/api-keys' },
-  { id: 'configuracion', label: 'Configuración', icon: Settings },
+  { id: 'configuracion', label: 'Configuración', icon: Settings, path: '/dashboard/configuracion' },
 ];
 
 export default function Sidebar({ isOpen, onClose, onLogout }) {

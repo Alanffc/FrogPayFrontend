@@ -48,6 +48,11 @@ const totalEl = document.getElementById('total');
 const cartCountEl = document.getElementById('cart-count');
 const providerSelect = document.getElementById('provider-select');
 const cardTokenInput = document.getElementById('card-token');
+const qrSection = document.getElementById('qr-section');
+const qrImage = document.getElementById('qr-image');
+const qrConfirmLink = document.getElementById('qr-confirm-link');
+const paypalSection = document.getElementById('paypal-section');
+const paypalApproveLink = document.getElementById('paypal-approve-link');
 const checkoutForm = document.getElementById('checkout-form');
 const resultStatusEl = document.getElementById('result-status');
 const resultBodyEl = document.getElementById('result-body');
@@ -60,6 +65,7 @@ renderCatalog();
 renderCart();
 bindEvents();
 updateCardTokenVisibility();
+resumePaypalPolling();
 
 function currency(amount) {
   return new Intl.NumberFormat('es-BO', {
@@ -231,7 +237,10 @@ function applySettingsToForm() {
 function bindEvents() {
   clearCartButton.addEventListener('click', clearCart);
 
-  providerSelect.addEventListener('change', updateCardTokenVisibility);
+  providerSelect.addEventListener('change', () => {
+    updateCardTokenVisibility();
+    hideQrSection();
+  });
 
   rememberCheckbox.addEventListener('change', () => {
     state.settings.remember = rememberCheckbox.checked;
@@ -258,6 +267,30 @@ function bindEvents() {
 function updateCardTokenVisibility() {
   const visible = providerSelect.value === 'card';
   cardTokenInput.closest('label').style.display = visible ? 'block' : 'none';
+}
+
+function showQrPayment(qrCode, qrUrl) {
+  if (!qrCode || !qrUrl) return;
+  qrImage.src = qrCode;
+  qrConfirmLink.href = qrUrl;
+  qrSection.style.display = 'block';
+}
+
+function hideQrSection() {
+  qrSection.style.display = 'none';
+  qrImage.src = '';
+  qrConfirmLink.href = '#';
+}
+
+function showPaypalApproval(approvalUrl) {
+  if (!approvalUrl) return;
+  paypalApproveLink.href = approvalUrl;
+  paypalSection.style.display = 'block';
+}
+
+function hidePaypalSection() {
+  paypalSection.style.display = 'none';
+  paypalApproveLink.href = '#';
 }
 
 function setResult(type, title, payload) {
@@ -290,6 +323,8 @@ async function handleCheckout(event) {
 
   payButton.disabled = true;
   payButton.textContent = 'Procesando...';
+  hideQrSection();
+  hidePaypalSection();
   setResult('neutral', 'Enviando request', 'Conectando con FrogPay...');
 
   const idempotencyKey = `store_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -329,7 +364,22 @@ async function handleCheckout(event) {
     }
 
     state.lastResult = data;
-    setResult('success', 'Pago aprobado', data);
+
+    if (provider === 'paypal' && data.paypal_approval_url) {
+      setResult('success', 'Redirigiendo a PayPal...', { payment_id: data.payment_id, estado: data.estado });
+      showPaypalApproval(data.paypal_approval_url);
+      sessionStorage.setItem('paypal_pending', JSON.stringify({
+        payment_id: data.payment_id,
+        backendUrl,
+        apiKey,
+      }));
+      window.location.href = data.paypal_approval_url;
+    } else if (provider === 'qr' && data.qr_code && data.qr_url) {
+      setResult('success', 'QR generado — escanea para confirmar', { payment_id: data.payment_id, estado: data.estado });
+      showQrPayment(data.qr_code, data.qr_url);
+    } else {
+      setResult('success', 'Pago aprobado', data);
+    }
   } catch (error) {
     setResult('error', 'Pago rechazado', {
       message: error.message || 'No se pudo completar el pago',
@@ -339,4 +389,50 @@ async function handleCheckout(event) {
     payButton.disabled = false;
     payButton.textContent = 'Pagar con FrogPay';
   }
+}
+
+function resumePaypalPolling() {
+  const raw = sessionStorage.getItem('paypal_pending');
+  if (!raw) return;
+
+  let ctx;
+  try { ctx = JSON.parse(raw); } catch (_) { sessionStorage.removeItem('paypal_pending'); return; }
+
+  const { payment_id, backendUrl, apiKey } = ctx;
+  if (!payment_id || !backendUrl || !apiKey) { sessionStorage.removeItem('paypal_pending'); return; }
+
+  setResult('neutral', 'Verificando pago PayPal...', { payment_id, estado: 'PENDING' });
+
+  let attempts = 0;
+  const maxAttempts = 40;
+
+  const interval = setInterval(async () => {
+    attempts++;
+    try {
+      const res = await fetch(`${backendUrl}/api/payments/${payment_id}`, {
+        headers: { 'x-api-key': apiKey },
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (data.estado === 'COMPLETED') {
+        clearInterval(interval);
+        sessionStorage.removeItem('paypal_pending');
+        setResult('success', '¡Pago completado con PayPal!', data);
+        clearCart();
+      } else if (data.estado === 'FAILED') {
+        clearInterval(interval);
+        sessionStorage.removeItem('paypal_pending');
+        setResult('error', 'Pago cancelado o fallido', data);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        sessionStorage.removeItem('paypal_pending');
+        setResult('error', 'Tiempo de espera agotado', { payment_id, message: 'El pago no se completó en el tiempo esperado.' });
+      }
+    } catch (_) {
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        sessionStorage.removeItem('paypal_pending');
+      }
+    }
+  }, 3000);
 }
