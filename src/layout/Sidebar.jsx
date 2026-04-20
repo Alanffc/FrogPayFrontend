@@ -1,4 +1,5 @@
-import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut, Crown, Sparkles } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 
@@ -11,7 +12,9 @@ const navItems = [
   { id: 'configuracion', label: 'Configuración', icon: Settings },
 ];
 
-export default function Sidebar({ isOpen, onClose, onLogout }) {
+export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREEMIUM' }) {
+  const isPremium = currentPlan === 'PREMIUM';
+
   return (
     <aside
       className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
@@ -38,7 +41,7 @@ export default function Sidebar({ isOpen, onClose, onLogout }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2 p-6">
+      <nav className="flex-1 space-y-2 overflow-y-auto p-6">
         <div className="mb-4 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">
           Panel de Control
         </div>
@@ -81,6 +84,33 @@ export default function Sidebar({ isOpen, onClose, onLogout }) {
           );
         })}
 
+        {/* ── PLAN (justo debajo de Configuración) ── */}
+        <NavLink
+          to="/dashboard/planes"
+          className={({ isActive }) =>
+            `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
+              isActive
+                ? isPremium
+                  ? 'bg-yellow-500/10 text-yellow-300 shadow-[inset_4px_0_0_0_#eab308]'
+                  : 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
+                : isPremium
+                ? 'text-yellow-400/80 hover:bg-yellow-500/10 hover:text-yellow-300'
+                : 'text-[#e6ff2a]/70 hover:bg-[#e6ff2a]/10 hover:text-[#e6ff2a]'
+            }`
+          }
+        >
+          {isPremium
+            ? <Crown size={20} className="text-yellow-400 group-hover:text-yellow-300 flex-shrink-0" />
+            : <Sparkles size={20} className="text-[#e6ff2a]/70 group-hover:text-[#e6ff2a] flex-shrink-0" />
+          }
+          <span className="flex-1">{isPremium ? 'Plan PREMIUM' : 'Upgrade a PREMIUM'}</span>
+          {isPremium && (
+            <span className="text-[9px] font-black bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded-full">
+              ACTIVO
+            </span>
+          )}
+        </NavLink>
+
         {/* Separador + Demo E2E */}
         <div className="my-3 border-t border-white/5" />
         <div className="mb-2 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">
@@ -104,9 +134,15 @@ export default function Sidebar({ isOpen, onClose, onLogout }) {
                 MT
               </div>
             </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-bold text-white truncate">Mi Tienda S.R.L.</p>
-              <p className="text-[10px] text-gray-500 font-mono truncate">ID: tenant_9x8f...</p>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-bold text-white truncate">Mi Empresa</p>
+              <span className={`inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mt-0.5 ${
+                isPremium
+                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                  : 'bg-white/10 text-gray-400 border border-white/10'
+              }`}>
+                {currentPlan}
+              </span>
             </div>
           </div>
 
