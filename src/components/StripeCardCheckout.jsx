@@ -19,7 +19,7 @@ const cardElementOptions = {
   },
 };
 
-function StripeCardCheckoutForm({ backendUrl, apiKey, amount, onResult }) {
+function StripeCardCheckoutForm({ backendUrl, apiKey, amount, currency, onResult }) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -66,7 +66,7 @@ function StripeCardCheckoutForm({ backendUrl, apiKey, amount, onResult }) {
         body: JSON.stringify({
           provider: 'stripe',
           amount,
-          currency: 'USD',
+          currency,
           description: 'Pago con tarjeta real via Stripe',
           paymentMethodId: paymentMethodResult.paymentMethod.id,
           idempotencyKey,
@@ -116,14 +116,14 @@ function StripeCardCheckoutForm({ backendUrl, apiKey, amount, onResult }) {
             <Loader2 size={16} className="animate-spin" /> Procesando pago...
           </span>
         ) : (
-          `Pagar $${Number(amount).toFixed(2)} con Stripe`
+          `Pagar ${Number(amount).toFixed(2)} ${String(currency || 'USD').toUpperCase()} con Stripe`
         )}
       </button>
     </form>
   );
 }
 
-export default function StripeCardCheckout({ backendUrl, apiKey, amount = 50, publishableKey, onResult }) {
+export default function StripeCardCheckout({ backendUrl, apiKey, amount = 50, currency = 'USD', publishableKey, onResult }) {
   const stripePromise = useMemo(() => {
     if (!publishableKey) return null;
     return loadStripe(publishableKey);
@@ -143,6 +143,7 @@ export default function StripeCardCheckout({ backendUrl, apiKey, amount = 50, pu
         backendUrl={backendUrl}
         apiKey={apiKey}
         amount={amount}
+        currency={currency}
         onResult={onResult}
       />
     </Elements>

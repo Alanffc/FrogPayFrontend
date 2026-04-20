@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import StripeCardCheckout from '../components/StripeCardCheckout.jsx';
 import { getStoredApiKey } from '../services/tenantKey.js';
+import { getCurrencyConfig } from '../services/currency.service.js';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 const AMOUNT      = 50.00;
@@ -81,7 +82,7 @@ function LogEntry({ entry, index }) {
 }
 
 // ── Tab: Tarjeta Simulada ──────────────────────────────────────────────────────
-function CardTab({ backendOk }) {
+function CardTab({ backendOk, currency }) {
   const [cardNumber, setCardNumber] = useState('');
   const [expiry,     setExpiry]     = useState('');
   const [cvv,        setCvv]        = useState('');
@@ -145,7 +146,7 @@ function CardTab({ backendOk }) {
         body: JSON.stringify({
           provider: 'card',
           amount: AMOUNT,
-          currency: 'USD',
+          currency,
           description: 'Demo tarjeta simulada — FrogPay',
           paymentToken: rawNumber,
         }),
@@ -173,7 +174,7 @@ function CardTab({ backendOk }) {
       payload: {
         payment_id: backendBody.payment_id ?? backendBody.transactionId ?? null,
         amount: AMOUNT,
-        currency: 'USD',
+            currency,
         status: backendBody.estado ?? (isApproved ? 'COMPLETED' : 'FAILED'),
         provider: 'card',
         card_last4: rawNumber.slice(-4),
@@ -334,7 +335,7 @@ function CardTab({ backendOk }) {
 }
 
 // ── Tab: PayPal (flujo real 3 pasos) ──────────────────────────────────────────
-function PayPalTab({ backendOk, initialOrderId }) {
+function PayPalTab({ backendOk, initialOrderId, currency }) {
   // paso: 'idle' | 'created' | 'approved' | 'done'
   const [step,         setStep]         = useState(initialOrderId ? 'approved' : 'idle');
   const [isLoading,    setIsLoading]    = useState(false);
@@ -349,7 +350,7 @@ function PayPalTab({ backendOk, initialOrderId }) {
       const res = await fetch(`${BACKEND_URL}/api/payments/paypal/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
-        body: JSON.stringify({ amount: AMOUNT, currency: 'USD', description: 'Demo FrogPay — PayPal' }),
+        body: JSON.stringify({ amount: AMOUNT, currency, description: 'Demo FrogPay — PayPal' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
@@ -729,6 +730,7 @@ export default function PaymentDemo() {
   const [backendStatus,       setBackendStatus]       = useState(null);
   const [initialPaypalOrder,  setInitialPaypalOrder]  = useState(null);
   const [stripeConfig,        setStripeConfig]        = useState({ publishableKey: '', enabled: false });
+  const [paymentCurrency,     setPaymentCurrency]     = useState('USD');
   const [stripeResult,        setStripeResult]        = useState(null);
 
   // Detectar retorno de PayPal: ?token=ORDER_ID&PayerID=...
@@ -764,6 +766,7 @@ export default function PaymentDemo() {
   useEffect(() => {
     if (!apiKey) {
       setStripeConfig({ publishableKey: '', enabled: false });
+      setPaymentCurrency('USD');
       return;
     }
 
@@ -784,6 +787,28 @@ export default function PaymentDemo() {
     };
 
     loadStripeConfig();
+  }, [apiKey]);
+
+  useEffect(() => {
+    if (!apiKey) {
+      return;
+    }
+
+    const loadCurrencyConfig = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/payments/currency-config`, {
+          headers: { 'x-api-key': apiKey },
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setPaymentCurrency(payload?.data?.selectedCurrency || payload?.data?.baseCurrency || 'USD');
+        }
+      } catch (_error) {
+        setPaymentCurrency('USD');
+      }
+    };
+
+    loadCurrencyConfig();
   }, [apiKey]);
 
   const backendOk = backendStatus?.ok !== false;
@@ -817,7 +842,7 @@ export default function PaymentDemo() {
           </h1>
           <p className="text-gray-400 text-sm max-w-xl mx-auto">
             Prueba el flujo completo: validación, tokenización, request al backend y webhook simulado.
-            Monto fijo de <strong className="text-white">${AMOUNT.toFixed(2)} USD</strong>.
+            Monto fijo de <strong className="text-white">{AMOUNT.toFixed(2)} {paymentCurrency}</strong>.
           </p>
 
           {/* Estado del backend */}
@@ -884,6 +909,7 @@ export default function PaymentDemo() {
                 backendUrl={BACKEND_URL}
                 apiKey={apiKey}
                 amount={AMOUNT}
+                currency={paymentCurrency}
                 publishableKey={stripeConfig.publishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''}
                 onResult={setStripeResult}
               />
