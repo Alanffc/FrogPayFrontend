@@ -53,18 +53,26 @@ export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowng
         <div className="absolute bottom-[10%] left-[-5%] w-[25vw] h-[25vw] rounded-full bg-[radial-gradient(circle,rgba(12,70,81,0.12),transparent_70%)]" />
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 lg:py-16 relative z-10">
+      <div className="max-w-5xl mx-auto px-6 pt-28 pb-10 lg:py-16 relative z-10">
 
-        {/* Botón hamburguesa (móvil) */}
-        <div className="flex items-center gap-4 mb-6 lg:hidden">
+        {/* Barra de navegación móvil flotante (estándar) */}
+        <div className="fixed top-4 left-4 right-4 z-[100] flex items-center justify-between lg:hidden bg-black/70 border border-white/10 p-4 rounded-2xl backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-black shadow-[0_0_15px_rgba(230,255,42,0.15)] border border-white/10">
+              <span className="text-[#e6ff2a] font-bold">F</span>
+            </div>
+            <span className="text-lg font-bold tracking-tight text-white">
+              Frog<span className="text-[#e6ff2a]">Pay</span>
+            </span>
+          </div>
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-3 text-white transition hover:bg-white/10"
             onClick={onToggleSidebar}
+            className="p-2 bg-white/5 rounded-xl border border-white/10 text-white transition-colors hover:bg-white/10 focus:outline-none"
+            aria-label="Abrir menú"
           >
             <Menu size={20} />
           </button>
-          <span className="text-base font-semibold text-gray-200">Menú</span>
         </div>
 
         {/* Encabezado */}

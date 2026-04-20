@@ -9,7 +9,7 @@ const navItems = [
   { id: 'cuentas-cobro', label: 'Cuentas de Cobro', icon: CreditCard, path: '/dashboard/cuentas-cobro' },
   { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'api', label: 'API & Webhooks', icon: Terminal, path: '/dashboard/api-keys' },
-  { id: 'configuracion', label: 'Configuración', icon: Settings },
+  { id: 'configuracion', label: 'Configuración', icon: Settings, path: '/dashboard/configuracion' },
 ];
 
 export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREEMIUM', onPlanChange }) {
@@ -32,7 +32,7 @@ export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREE
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:flex`}
+      className={`fixed right-0 top-0 z-50 flex h-screen w-72 flex-col border-l border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} lg:right-auto lg:left-0 lg:border-l-0 lg:border-r lg:border-r-white/5 lg:translate-x-0 lg:flex`}
     >
       {/* Logo + Botón Cerrar (móvil) */}
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-6 py-8 lg:px-8">
