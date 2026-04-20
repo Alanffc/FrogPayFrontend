@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Panel de administración de FrogMarket para monitorear pagos y webhooks." />
+    <title>FrogMarket Admin</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb bg-orb-one"></div>
+    <div class="bg-orb bg-orb-two"></div>
+
+    <header class="shell hero admin-hero">
+      <div class="brand-row">
+        <div class="brand-mark">A</div>
+        <div>
+          <p class="eyebrow">Panel de administración</p>
+          <h1>FrogMarket Admin</h1>
+        </div>
+      </div>
+      <p class="hero-copy">
+        Monitorea pagos y estado de webhooks por tenant en tiempo real, sin login adicional.
+      </p>
+      <div class="hero-badges">
+        <span>Live monitor</span>
+        <span>Webhook status</span>
+        <span>Sin autenticación UI</span>
+      </div>
+      <div class="admin-actions-row">
+        <a href="/" class="ghost-button">Volver a tienda</a>
+      </div>
+    </header>
+
+    <main class="shell admin-layout">
+      <section class="panel admin-settings-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Conexión</p>
+            <h2>Configuración del monitor</h2>
+          </div>
+        </div>
+
+        <form id="admin-settings" class="checkout-form">
+          <div class="field-grid">
+            <label>
+              <span>Backend FrogPay</span>
+              <input name="backendUrl" type="url" value="http://localhost:3000" />
+            </label>
+            <label>
+              <span>API Key del tenant</span>
+              <input name="apiKey" type="password" placeholder="fp_live_..." autocomplete="off" />
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              <span>Registros por consulta</span>
+              <input name="limit" type="number" min="1" max="100" value="30" />
+            </label>
+            <label>
+              <span>Refresco automático (segundos)</span>
+              <input name="refreshSeconds" type="number" min="2" max="60" value="5" />
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              <span>URL pública de ngrok</span>
+              <input name="ngrokUrl" type="url" placeholder="https://xxxxx.ngrok-free.app" />
+            </label>
+            <label>
+              <span>Webhook Endpoint para pegar en FrogPay</span>
+              <input id="webhook-endpoint" type="text" readonly />
+            </label>
+          </div>
+
+          <div class="admin-hint">
+            Ejecuta: <strong>ngrok http 4173</strong> y pega la URL HTTPS generada arriba. Luego usa el endpoint mostrado en FrogPay.
+          </div>
+
+          <div class="admin-actions-row">
+            <button class="primary-button" type="submit" id="save-admin-settings">Guardar y refrescar</button>
+            <button class="ghost-button" type="button" id="refresh-now">Refrescar ahora</button>
+          </div>
+
+          <label class="remember">
+            <input type="checkbox" id="admin-remember-settings" checked />
+            Guardar configuración en este navegador
+          </label>
+        </form>
+      </section>
+
+      <section class="panel admin-monitor-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Estado</p>
+            <h2>Pagos y webhooks</h2>
+          </div>
+          <span id="monitor-status" class="status neutral">Esperando configuración</span>
+        </div>
+
+        <p id="last-updated" class="admin-meta">Sin sincronizar todavía.</p>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="payments-table">
+            <thead>
+              <tr>
+                <th>Pago</th>
+                <th>Estado</th>
+                <th>Monto</th>
+                <th>Proveedor</th>
+                <th>Transacción</th>
+                <th>Webhooks</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="payments-body">
+              <tr>
+                <td colspan="7" class="empty-cell">Configura backend + API key para empezar el monitoreo.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel admin-monitor-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Webhook Receiver</p>
+            <h2>Eventos recibidos en la tienda</h2>
+          </div>
+          <span id="receiver-status" class="status neutral">Esperando eventos</span>
+        </div>
+
+        <section class="notification-center">
+          <div class="notification-head">
+            <div>
+              <p class="eyebrow">Tiempo real</p>
+              <h3>Notificaciones de pagos</h3>
+            </div>
+            <button class="ghost-button" type="button" id="toggle-notifications">Activar notificaciones</button>
+          </div>
+          <p id="notification-meta" class="admin-meta">Estado: OFF</p>
+          <ul id="notification-list" class="notification-list">
+            <li class="notification-empty">No hay notificaciones recientes.</li>
+          </ul>
+        </section>
+
+        <div class="admin-actions-row">
+          <button class="ghost-button" type="button" id="refresh-receiver">Refrescar receiver</button>
+          <button class="ghost-button" type="button" id="clear-receiver">Limpiar eventos</button>
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="receiver-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Evento</th>
+                <th>Payment ID</th>
+                <th>Status</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody id="receiver-body">
+              <tr>
+                <td colspan="5" class="empty-cell">Sin eventos todavía.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./admin.js" type="module"></script>
+  </body>
+</html>

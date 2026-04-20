@@ -1,18 +1,32 @@
-import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical } from 'lucide-react';
-import { NavLink, Link } from 'react-router-dom';
+import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut } from 'lucide-react';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
   { id: 'finanzas', label: 'Finanzas', icon: TrendingUp, path: '/dashboard/finanzas' },
+  { id: 'cuentas-cobro', label: 'Cuentas de Cobro', icon: CreditCard, path: '/dashboard/cuentas-cobro' },
+  { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'api', label: 'API & Webhooks', icon: Terminal, path: '/dashboard/api-keys' },
+  { id: 'configuracion', label: 'Configuración', icon: Settings, path: '/dashboard/configuracion' },
 ];
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose, onLogout }) {
+  const location = useLocation();
+  const [tenantName, setTenantName] = useState('Mi Tienda S.R.L.');
+
+  useEffect(() => {
+    const name = localStorage.getItem('tenantName');
+    if (name) {
+      setTenantName(name);
+    }
+  }, []);
   return (
     <aside
-      className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 lg:flex`}
+      className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0 lg:flex`}
     >
       {/* Logo + Botón Cerrar (móvil) */}
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-6 py-8 lg:px-8">
@@ -54,9 +68,10 @@ export default function Sidebar({ isOpen, onClose }) {
                 key={item.id}
                 to={item.path}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${isActive
-                    ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
+                    location.pathname === item.path
+                      ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
+                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
                   }`
                 }
               >
@@ -92,16 +107,27 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* User Area */}
       <div className="border-t border-white/5 p-6">
-        <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-3 border border-white/5 transition-colors hover:bg-white/10 cursor-pointer">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#0c4651] to-[#e6ff2a] p-[2px]">
-            <div className="h-full w-full rounded-full bg-black flex items-center justify-center text-xs font-bold text-white">
-              MT
+        <div className="space-y-3 rounded-2xl bg-white/5 p-3 border border-white/5 transition-colors hover:bg-white/10">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#0c4651] to-[#e6ff2a] p-[2px]">
+              <div className="h-full w-full rounded-full bg-black flex items-center justify-center text-xs font-bold text-white">
+                MT
+              </div>
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-bold text-white truncate">{tenantName}</p>
+              <p className="text-[10px] text-gray-500 font-mono truncate">ID: tenant_9x8f...</p>
             </div>
           </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-bold text-white truncate">Mi Tienda S.R.L.</p>
-            <p className="text-[10px] text-gray-500 font-mono truncate">ID: tenant_9x8f...</p>
-          </div>
+
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-2.5 text-sm font-semibold text-red-300 transition hover:bg-red-500/10 hover:text-red-200"
+          >
+            <LogOut size={16} />
+            Cerrar sesión
+          </button>
         </div>
       </div>
     </aside>

@@ -59,7 +59,7 @@ const features = [
     id: 0,
     title: "Rendimiento Extremo",
     subtitle: "Latencia < 300ms",
-    desc: "Nuestra arquitectura distribuida garantiza tiempos de respuesta ultrarrápidos, esenciales para conversiones altas. SLA de 99.9% garantizado.",
+    desc: "Objetivo de arquitectura: mantener respuestas por debajo de 300ms y operar con alta disponibilidad conforme evoluciona la plataforma.",
     icon: Zap,
     visual: (
       <div className="w-full h-full flex flex-col items-center justify-center p-8 space-y-5">
@@ -87,8 +87,8 @@ const features = [
   {
     id: 1,
     title: "Seguridad Bancaria",
-    subtitle: "Certificación PCI DSS",
-    desc: "Infraestructura aislada, tokenización de extremo a extremo y prevención de fraude impulsada por IA en tiempo real.",
+    subtitle: "Alineado a PCI DSS (simulado)",
+    desc: "Diseño orientado a seguridad financiera con tokenización y controles incrementales en el roadmap de cumplimiento.",
     icon: ShieldCheck,
     visual: (
       <div className="w-full h-full flex flex-col items-center justify-center relative">
@@ -222,7 +222,7 @@ export default function Home({ onLoginClick }) {
           </h1>
           
           <p className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl leading-relaxed animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            Una API. Todos los métodos de pago. Arquitectura multi-tenant diseñada para escalar globalmente con latencia inferior a 300ms.
+            Una API para múltiples métodos de pago. Arquitectura multi-tenant lista para evolucionar desde MVP hacia escalado nacional.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center gap-6 w-full justify-center animate-fade-in-up" style={{ animationDelay: '400ms' }}>
