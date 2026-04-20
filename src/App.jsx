@@ -17,6 +17,7 @@ import ApiKeys from "./pages/ApiKeys.jsx";
 import PayoutAccounts from "./pages/PayoutAccounts.jsx";
 import Finance from "./pages/Finance.jsx";
 import Plans from "./pages/Plans.jsx";
+import Configuracion from "./pages/Configuracion.jsx";
 
 // --- COMPONENTE DE PROTECCIÓN DE RUTAS ---
 const ProtectedRoute = ({ isAuthenticated, children }) => {
@@ -57,7 +58,7 @@ function App() {
   };
 
   const [currentPlan, setCurrentPlan] = useState(getPlanFromToken());
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,7 +84,7 @@ function App() {
     } else {
       setCurrentPlan(getPlanFromToken());
     }
-    navigate('/dashboard'); 
+    navigate('/dashboard');
     window.scrollTo(0, 0);
   };
 
@@ -124,9 +125,9 @@ function App() {
       </div>
 
       <div className="relative z-10">
-        <Navbar 
-          onLoginClick={() => setIsLoginOpen(true)} 
-          onRegisterClick={() => setIsRegisterOpen(true)} 
+        <Navbar
+          onLoginClick={() => setIsLoginOpen(true)}
+          onRegisterClick={() => setIsRegisterOpen(true)}
         />
         <main>
           <Home onLoginClick={() => setIsRegisterOpen(true)} />
@@ -134,17 +135,17 @@ function App() {
         <Footer />
       </div>
 
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        onAuthSuccess={handleAuthSuccess} 
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
         onSwitchToRegister={() => { setIsLoginOpen(false); setIsRegisterOpen(true); }}
       />
 
-      <RegisterModal 
-        isOpen={isRegisterOpen} 
-        onClose={() => setIsRegisterOpen(false)} 
-        onAuthSuccess={handleAuthSuccess} 
+      <RegisterModal
+        isOpen={isRegisterOpen}
+        onClose={() => setIsRegisterOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
         onSwitchToLogin={() => { setIsRegisterOpen(false); setIsLoginOpen(true); }}
       />
     </div>
@@ -165,9 +166,9 @@ function App() {
 
     return (
       <div className="min-h-screen bg-[#040A0B] text-white overflow-x-hidden relative">
-        <Sidebar 
-          isOpen={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)} 
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
           onLogout={handleLogout}
           currentPlan={currentPlan}
         />
@@ -197,32 +198,32 @@ function App() {
       <Route path="/checkout" element={<PaymentDemo />} />
 
       {/* --- RUTAS DEL DASHBOARD --- */}
-      <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={Dashboard} /> 
+            <DashboardLayout Page={Dashboard} />
           </ProtectedRoute>
-        } 
+        }
       />
 
       {/* RUTA AÑADIDA: Finanzas */}
-      <Route 
-        path="/dashboard/finanzas" 
+      <Route
+        path="/dashboard/finanzas"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={Finance} /> 
+            <DashboardLayout Page={Finance} />
           </ProtectedRoute>
-        } 
+        }
       />
 
-      <Route 
-        path="/dashboard/cuentas-cobro" 
+      <Route
+        path="/dashboard/cuentas-cobro"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={PayoutAccounts} /> 
+            <DashboardLayout Page={PayoutAccounts} />
           </ProtectedRoute>
-        } 
+        }
       />
 
       <Route
@@ -230,23 +231,32 @@ function App() {
         element={<Navigate to="/dashboard/cuentas-cobro" replace />}
       />
 
-      <Route 
-        path="/dashboard/api-keys" 
+      <Route
+        path="/dashboard/api-keys"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={ApiKeys} /> 
+            <DashboardLayout Page={ApiKeys} />
           </ProtectedRoute>
-        } 
+        }
+      />
+
+      <Route
+        path="/dashboard/configuracion"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <DashboardLayout Page={Configuracion} />
+          </ProtectedRoute>
+        }
       />
 
       {/* RUTA: Planes */}
-      <Route 
-        path="/dashboard/planes" 
+      <Route
+        path="/dashboard/planes"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={Plans} /> 
+            <DashboardLayout Page={Plans} />
           </ProtectedRoute>
-        } 
+        }
       />
 
       <Route path="*" element={<Navigate to="/" replace />} />

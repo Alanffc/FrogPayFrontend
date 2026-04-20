@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut, Crown, Sparkles } from 'lucide-react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 
 const navItems = [
@@ -12,14 +12,27 @@ const navItems = [
   { id: 'configuracion', label: 'Configuración', icon: Settings },
 ];
 
-export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREEMIUM' }) {
+export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREEMIUM', onPlanChange }) {
   const isPremium = currentPlan === 'PREMIUM';
+  const location = useLocation();
+  const [tenantName, setTenantName] = useState('Mi Tienda S.R.L.');
+
+  useEffect(() => {
+    const name = localStorage.getItem('tenantName');
+    if (name) {
+      setTenantName(name);
+    }
+  }, []);
+
+  const handlePlanToggle = () => {
+    if (onPlanChange) {
+      onPlanChange(isPremium ? 'FREEMIUM' : 'PREMIUM');
+    }
+  };
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 lg:flex`}
+      className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:flex`}
     >
       {/* Logo + Botón Cerrar (móvil) */}
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-6 py-8 lg:px-8">
@@ -42,9 +55,7 @@ export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREE
 
       {/* Navigation */}
       <nav className="flex-1 space-y-2 overflow-y-auto p-6">
-        <div className="mb-4 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">
-          Panel de Control
-        </div>
+        <div className="mb-4 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">Panel de Control</div>
 
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -54,25 +65,19 @@ export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREE
               {item.label}
             </>
           );
-
           if (item.path) {
             return (
               <NavLink
                 key={item.id}
                 to={item.path}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
-                    isActive
-                      ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
-                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                  }`
+                  `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${location.pathname === item.path ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`
                 }
               >
                 {itemContent}
               </NavLink>
             );
           }
-
           return (
             <a
               key={item.id}
@@ -88,34 +93,23 @@ export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREE
         <NavLink
           to="/dashboard/planes"
           className={({ isActive }) =>
-            `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
-              isActive
-                ? isPremium
-                  ? 'bg-yellow-500/10 text-yellow-300 shadow-[inset_4px_0_0_0_#eab308]'
-                  : 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
-                : isPremium
-                ? 'text-yellow-400/80 hover:bg-yellow-500/10 hover:text-yellow-300'
-                : 'text-[#e6ff2a]/70 hover:bg-[#e6ff2a]/10 hover:text-[#e6ff2a]'
-            }`
+            `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${isActive ? (isPremium ? 'bg-yellow-500/10 text-yellow-300 shadow-[inset_4px_0_0_0_#eab308]' : 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]') : (isPremium ? 'text-yellow-400/80 hover:bg-yellow-500/10 hover:text-yellow-300' : 'text-[#e6ff2a]/70 hover:bg-[#e6ff2a]/10 hover:text-[#e6ff2a]')}`
           }
         >
-          {isPremium
-            ? <Crown size={20} className="text-yellow-400 group-hover:text-yellow-300 flex-shrink-0" />
-            : <Sparkles size={20} className="text-[#e6ff2a]/70 group-hover:text-[#e6ff2a] flex-shrink-0" />
-          }
+          {isPremium ? (
+            <Crown size={20} className="text-yellow-400 group-hover:text-yellow-300 flex-shrink-0" />
+          ) : (
+            <Sparkles size={20} className="text-[#e6ff2a]/70 group-hover:text-[#e6ff2a] flex-shrink-0" />
+          )}
           <span className="flex-1">{isPremium ? 'Plan PREMIUM' : 'Upgrade a PREMIUM'}</span>
           {isPremium && (
-            <span className="text-[9px] font-black bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded-full">
-              ACTIVO
-            </span>
+            <span className="text-[9px] font-black bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded-full">ACTIVO</span>
           )}
         </NavLink>
 
         {/* Separador + Demo E2E */}
         <div className="my-3 border-t border-white/5" />
-        <div className="mb-2 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">
-          Demo
-        </div>
+        <div className="mb-2 px-2 text-xs font-bold uppercase tracking-widest text-gray-500">Demo</div>
         <Link
           to="/checkout"
           className="group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 text-[#e6ff2a]/80 hover:bg-[#e6ff2a]/10 hover:text-[#e6ff2a]"
@@ -130,22 +124,16 @@ export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREE
         <div className="space-y-3 rounded-2xl bg-white/5 p-3 border border-white/5 transition-colors hover:bg-white/10">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#0c4651] to-[#e6ff2a] p-[2px]">
-              <div className="h-full w-full rounded-full bg-black flex items-center justify-center text-xs font-bold text-white">
-                MT
-              </div>
+              <div className="h-full w-full rounded-full bg-black flex items-center justify-center text-xs font-bold text-white">MT</div>
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-bold text-white truncate">Mi Empresa</p>
-              <span className={`inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mt-0.5 ${
-                isPremium
-                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                  : 'bg-white/10 text-gray-400 border border-white/10'
-              }`}>
-                {currentPlan}
-              </span>
+              <span className={`inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mt-0.5 ${isPremium ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-white/10 text-gray-400 border border-white/10'}`}>${currentPlan}</span>
+              <div className="overflow-hidden">
+                <p className="text-sm font-bold text-white truncate">{tenantName}</p>
+                <p className="text-[10px] text-gray-500 font-mono truncate">ID: tenant_9x8f...</p>
+              </div>
             </div>
           </div>
-
           <button
             type="button"
             onClick={onLogout}
@@ -153,6 +141,14 @@ export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREE
           >
             <LogOut size={16} />
             Cerrar sesión
+          </button>
+          {/* Plan toggle button */}
+          <button
+            type="button"
+            onClick={handlePlanToggle}
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500/5 px-4 py-2.5 text-sm font-semibold text-indigo-300 transition hover:bg-indigo-500/10"
+          >
+            Plan Actual {isPremium ? 'Premium' : 'Freemium'}
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Lock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import Toast from './Toast';
 import { getStoredApiKey } from '../services/tenantKey.js';
@@ -12,6 +12,48 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", webh
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [currencies, setCurrencies] = useState([]);
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [exchangeRate, setExchangeRate] = useState(null);
+
+  // Cargar monedas al montar el componente
+  useEffect(() => {
+    const loadCurrencies = async () => {
+      try {
+        const response = await fetch(`${resolvedBackendUrl}/api/currencies`);
+        if (response.ok) {
+          const data = await response.json();
+          setCurrencies(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error cargando monedas:', error);
+      }
+    };
+    loadCurrencies();
+  }, [resolvedBackendUrl]);
+
+  // Calcular tipo de cambio cuando cambie amount o currency
+  useEffect(() => {
+    const calculateExchangeRate = async () => {
+      if (selectedCurrency === 'USD') {
+        setExchangeRate(null); // No mostrar si es USD
+        return;
+      }
+      try {
+        const response = await fetch(`${resolvedBackendUrl}/api/payments/exchange-rate?amount=${amount}&fromCurrency=${selectedCurrency}&toCurrency=USD`);
+        if (response.ok) {
+          const data = await response.json();
+          setExchangeRate(data.data);
+        } else {
+          setExchangeRate(null);
+        }
+      } catch (error) {
+        console.error('Error calculando tasa:', error);
+        setExchangeRate(null);
+      }
+    };
+    calculateExchangeRate();
+  }, [amount, selectedCurrency, resolvedBackendUrl]);
 
   const executePayment = async () => {
     const idempotencyKey = `payment_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
@@ -29,7 +71,7 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", webh
       body: JSON.stringify({
         provider,
         amount: parseFloat(amount),
-        currency: 'USD',
+        currency: selectedCurrency,
         idempotencyKey,
         description: `Demo de pago con ${provider} desde FrogPay Dashboard`,
       }),
@@ -75,6 +117,41 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", webh
             <Lock size={14} className="text-[#e6ff2a] shrink-0" />
             Checkout {provider === 'mock' ? 'Simulado' : 'PayPal'}
           </label>
+
+          {/* Selector de moneda */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300 mb-2">Moneda</label>
+            <select
+              value={selectedCurrency}
+              onChange={(e) => setSelectedCurrency(e.target.value)}
+              className="w-full px-3 py-2 bg-[#020607] border border-white/10 rounded-lg text-gray-300 focus:outline-none focus:border-[#e6ff2a]"
+            >
+              {currencies.map((currency) => (
+                <option key={currency.codigo} value={currency.codigo}>
+                  {currency.nombre} ({currency.codigo})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Visualización de tipo de cambio */}
+          {exchangeRate && (
+            <div className="mb-4 p-3 bg-[#020607] border border-white/10 rounded-lg">
+              <p className="text-sm text-gray-300">
+                <strong>Tasa de cambio:</strong> 1 {selectedCurrency} = {exchangeRate.exchangeRate.toFixed(4)} USD
+              </p>
+              <p className="text-sm text-gray-300">
+                <strong>Monto original:</strong> {amount} {selectedCurrency}
+              </p>
+              <p className="text-sm text-gray-300">
+                <strong>Monto convertido:</strong> {exchangeRate.convertedAmount} USD
+              </p>
+              <p className="text-xs text-gray-500">
+                Base: USD | Actualizado: {new Date(exchangeRate.timestamp).toLocaleString()}
+              </p>
+            </div>
+          )}
+
           <div className="rounded-2xl border border-white/10 bg-[#020607] px-4 py-5 text-sm text-gray-300">
             {provider === 'mock' ? (
               <>
@@ -117,7 +194,7 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", webh
               <Loader2 className="animate-spin" size={20} /> Procesando...
             </>
           ) : (
-            `Pagar $${amount} con ${provider === 'mock' ? 'Simulador' : 'PayPal'}`
+            `Pagar ${amount} ${selectedCurrency} con ${provider === 'mock' ? 'Simulador' : 'PayPal'}`
           )}
         </button>
       </form>

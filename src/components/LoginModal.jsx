@@ -70,25 +70,39 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-5xl rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/70 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-fade-in-up" style={{ animationDuration: '0.3s' }}>
-        <button type="button" onClick={onClose} className="absolute top-6 right-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm">
+      
+      {/* Contenedor principal con altura máxima dinámica (dvh) y scroll interno */}
+      <div 
+        className="relative w-full max-w-5xl max-h-[95dvh] overflow-y-auto rounded-[2rem] sm:rounded-[2.5rem] border border-white/10 bg-black/70 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-fade-in-up" 
+        style={{ animationDuration: '0.3s' }}
+      >
+        
+        {/* Botón Cerrar adaptado para mobile */}
+        <button 
+          type="button" 
+          onClick={onClose} 
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-black/40 sm:bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20"
+        >
           <X size={20} />
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-0 lg:gap-6">
-          <div className="relative overflow-hidden rounded-[2rem]">
+          
+          {/* Lado Izquierdo - Imagen adaptada a mobile */}
+          <div className="relative overflow-hidden lg:rounded-[2rem]">
             <img src={LiquidGradient} alt="Liquid gradient accent" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
-            <div className="relative h-full min-h-[420px]" />
+            <div className="relative h-[140px] sm:h-[200px] lg:h-full lg:min-h-[420px]" />
           </div>
 
-          <div className="relative z-10 p-6 sm:p-8 lg:p-14 flex flex-col justify-between gap-6 lg:gap-8">
+          {/* Lado Derecho - Formulario de Login (sin overflow propio) */}
+          <div className="relative z-10 p-5 sm:p-8 lg:p-14 flex flex-col justify-between gap-6 lg:gap-8">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[#b7f758]">
                 Inicia sesión
               </span>
-              <h2 className="mt-6 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
+              <h2 className="mt-4 sm:mt-6 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
                 Accede a tu panel <br/> de control.
               </h2>
             </div>
@@ -125,7 +139,8 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
                 </div>
               </label>
 
-              <div className="flex items-center justify-between text-sm mt-[-4px]">
+              {/* Ajuste de Recordarme / Olvidaste contraseña para mobile */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-sm mt-[-4px] gap-4 sm:gap-0">
                 <label className="flex items-center gap-3 text-gray-400 cursor-pointer hover:text-gray-200 transition group">
                   <div className="relative flex items-center justify-center w-5 h-5">
                     <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="peer appearance-none w-5 h-5 rounded-[6px] border border-white/20 bg-white/5 checked:bg-[#e6ff2a] checked:border-[#e6ff2a] cursor-pointer transition-all duration-200" />
@@ -133,19 +148,20 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
                   </div>
                   <span className="select-none">Recordarme</span>
                 </label>
-                <button type="button" className="text-[#e6ff2a] hover:text-[#b7f758] hover:underline transition">
+                <button type="button" className="text-[#e6ff2a] hover:text-[#b7f758] hover:underline transition text-left sm:text-right">
                   ¿Olvidaste tu contraseña?
                 </button>
               </div>
 
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between mt-4">
-                <div className="text-sm text-gray-400">
+              {/* Footer con botones adaptados */}
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between mt-2">
+                <div className="text-sm text-gray-400 text-center sm:text-left">
                   ¿No tienes cuenta?{' '}
                   <button type="button" onClick={onSwitchToRegister} className="text-white font-medium hover:text-[#e6ff2a] transition">
                     Regístrate
                   </button>
                 </div>
-                <MagneticButton className="group inline-flex w-full sm:w-auto items-center justify-center gap-3 sm:gap-4 rounded-full bg-[#e6ff2a] px-6 sm:px-8 py-3 sm:py-3.5 font-bold text-[#04181C] shadow-[0_10px_30px_rgba(230,255,42,0.2)] hover:shadow-[0_15px_40px_rgba(230,255,42,0.35)] transition-all whitespace-nowrap">
+                <MagneticButton className="group inline-flex w-full sm:w-auto items-center justify-center gap-3 sm:gap-4 rounded-full bg-[#e6ff2a] px-8 sm:px-10 py-3.5 sm:py-4 font-bold text-[#04181C] shadow-[0_10px_30px_rgba(230,255,42,0.2)] hover:shadow-[0_15px_40px_rgba(230,255,42,0.35)] transition-all whitespace-nowrap">
                   Iniciar sesión
                   <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
                 </MagneticButton>
@@ -154,6 +170,7 @@ export default function LoginModal({ isOpen, onClose, onAuthSuccess, onSwitchToR
           </div>
         </div>
       </div>
+      
       <Toast isVisible={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
     </div>
   );
