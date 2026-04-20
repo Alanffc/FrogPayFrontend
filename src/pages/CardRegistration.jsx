@@ -68,17 +68,32 @@ export default function CardRegistration() {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10 space-y-3">
+    <div className="w-full min-h-screen relative">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-[radial-gradient(circle,rgba(12,70,81,0.15),transparent_70%)]" />
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-10 lg:py-16">
+        <header className="mb-10">
+          <div className="flex items-center gap-4 mb-6 lg:hidden">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-3 text-white hover:bg-white/10 transition"
+            >
+              {/* Menu button if needed */}
+            </button>
+          </div>
+
           <div className="inline-flex items-center gap-2 rounded-full border border-[#e6ff2a]/20 bg-[#e6ff2a]/5 px-4 py-2 text-xs font-bold uppercase tracking-widest text-[#e6ff2a]">
             <CreditCard size={14} /> Registro de tarjeta
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-white">Añade una tarjeta de débito o crédito</h1>
+          <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-white mt-4 mb-3">
+            Añade una tarjeta de débito o crédito
+          </h1>
           <p className="max-w-3xl leading-relaxed text-gray-400">
             Registra la tarjeta de tu cliente de forma segura dentro del panel de FrogPay.
           </p>
-        </div>
+        </header>
 
         <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="flex flex-col gap-6">
