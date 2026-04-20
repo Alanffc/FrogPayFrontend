@@ -96,6 +96,7 @@
               <select name="provider" id="provider-select">
                 <option value="card">Tarjeta</option>
                 <option value="paypal">PayPal</option>
+                <option value="qr">QR</option>
                 <option value="mock">Mock</option>
               </select>
             </label>
@@ -121,6 +122,36 @@
             <span id="result-status" class="status neutral">En espera</span>
           </div>
           <pre id="result-body">Selecciona productos y completa el pago para ver la respuesta del backend.</pre>
+        </section>
+
+        <section id="paypal-section" class="result-card" style="display:none;">
+          <div class="result-head">
+            <p class="eyebrow">Pago PayPal</p>
+            <span class="status neutral">Pendiente de aprobación</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;padding:1rem 0;">
+            <p style="color:#9ca3af;font-size:0.85rem;text-align:center;">
+              Haz clic en el botón para aprobar el pago en PayPal.<br/>
+              Regresa a esta ventana una vez completado.
+            </p>
+            <a id="paypal-approve-link" href="#" target="_blank" rel="noopener noreferrer"
+               style="background:#0070ba;color:#fff;font-weight:700;padding:0.75rem 2rem;border-radius:12px;text-decoration:none;font-size:0.9rem;display:flex;align-items:center;gap:0.5rem;">
+              🅿 Aprobar pago en PayPal
+            </a>
+          </div>
+        </section>
+
+        <section id="qr-section" class="result-card" style="display:none;">
+          <div class="result-head">
+            <p class="eyebrow">Pago QR</p>
+            <span class="status neutral">Pendiente de confirmación</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;padding:1rem 0;">
+            <img id="qr-image" src="" alt="Código QR de pago" style="width:200px;height:200px;border-radius:12px;border:2px solid rgba(255,255,255,0.1);" />
+            <a id="qr-confirm-link" href="#" target="_blank" rel="noopener noreferrer" class="primary-button" style="text-decoration:none;text-align:center;display:block;">
+              Abrir página de confirmación QR
+            </a>
+          </div>
         </section>
       </aside>
     </main>
