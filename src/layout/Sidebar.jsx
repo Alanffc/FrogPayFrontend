@@ -1,6 +1,7 @@
 import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut } from 'lucide-react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
@@ -12,6 +13,15 @@ const navItems = [
 ];
 
 export default function Sidebar({ isOpen, onClose, onLogout }) {
+  const location = useLocation();
+  const [tenantName, setTenantName] = useState('Mi Tienda S.R.L.');
+
+  useEffect(() => {
+    const name = localStorage.getItem('tenantName');
+    if (name) {
+      setTenantName(name);
+    }
+  }, []);
   return (
     <aside
       className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col border-r border-white/5 bg-black/60 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
@@ -59,7 +69,7 @@ export default function Sidebar({ isOpen, onClose, onLogout }) {
                 to={item.path}
                 className={({ isActive }) =>
                   `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
-                    isActive
+                    location.pathname === item.path
                       ? 'bg-[#e6ff2a]/10 text-[#e6ff2a] shadow-[inset_4px_0_0_0_#e6ff2a]'
                       : 'text-gray-400 hover:bg-white/5 hover:text-white'
                   }`
@@ -105,7 +115,7 @@ export default function Sidebar({ isOpen, onClose, onLogout }) {
               </div>
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-bold text-white truncate">Mi Tienda S.R.L.</p>
+              <p className="text-sm font-bold text-white truncate">{tenantName}</p>
               <p className="text-[10px] text-gray-500 font-mono truncate">ID: tenant_9x8f...</p>
             </div>
           </div>
