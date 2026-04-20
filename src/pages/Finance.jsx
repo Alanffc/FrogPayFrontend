@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
+import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   BarChart, Bar, Cell
 } from 'recharts';
-import { 
-  DollarSign, Activity, TrendingUp, Download, ArrowUpRight, ArrowDownRight, 
+import {
+  DollarSign, Activity, TrendingUp, Download, ArrowUpRight, ArrowDownRight,
   CreditCard, FileText, FileSpreadsheet, ChevronDown, FilterX, Menu
 } from 'lucide-react';
 
@@ -22,22 +22,22 @@ const StripeIcon = () => (
 
 const PayPalIcon = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
-    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zM6.92 2h-1.51L2.298 21.337h1.51L6.92 2zM19.143 6.097c-1.112-1.267-3.12-1.81-5.69-1.81H5.998L2.886 23.411H7.49l.643-4.08h2.19c4.298 0 7.664-1.748 8.647-6.797.03-.15.054-.294.077-.437.292-1.867-.002-3.137-1.012-4.287z"/>
+    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zM6.92 2h-1.51L2.298 21.337h1.51L6.92 2zM19.143 6.097c-1.112-1.267-3.12-1.81-5.69-1.81H5.998L2.886 23.411H7.49l.643-4.08h2.19c4.298 0 7.664-1.748 8.647-6.797.03-.15.054-.294.077-.437.292-1.867-.002-3.137-1.012-4.287z" />
   </svg>
 );
 
 const CryptoIcon = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12.003 2.005l-4.116 4.116 1.808 1.808 2.308-2.308 2.308 2.308 1.808-1.808-4.116-4.116zm-7.932 7.93L2.005 12l2.066 2.065 1.808-1.808-1.045-1.046 1.045-1.046-1.808-1.808zm15.864 0l-1.808 1.808 1.045 1.046-1.045 1.046 1.808 1.808L21.995 12l-2.06-2.065zM12.003 6.643l-5.358 5.357 5.358 5.358 5.358-5.358-5.358-5.357zm0 2.553l2.805 2.804-2.805 2.805-2.805-2.805 2.805-2.804zm0 8.521l-2.308 2.308-1.808-1.808 4.116 4.116 4.116-4.116-1.808-1.808-2.308 2.308z"/>
+    <path d="M12.003 2.005l-4.116 4.116 1.808 1.808 2.308-2.308 2.308 2.308 1.808-1.808-4.116-4.116zm-7.932 7.93L2.005 12l2.066 2.065 1.808-1.808-1.045-1.046 1.045-1.046-1.808-1.808zm15.864 0l-1.808 1.808 1.045 1.046-1.045 1.046 1.808 1.808L21.995 12l-2.06-2.065zM12.003 6.643l-5.358 5.357 5.358 5.358 5.358-5.358-5.358-5.357zm0 2.553l2.805 2.804-2.805 2.805-2.805-2.805 2.805-2.804zm0 8.521l-2.308 2.308-1.808-1.808 4.116 4.116 4.116-4.116-1.808-1.808-2.308 2.308z" />
   </svg>
 );
 
 // --- COLORES CORPORATIVOS ESTRICTOS ---
 const brandColors = {
-  all:    { income: '#e6ff2a', volume: '#0c4651' },
-  stripe: { income: '#635BFF', volume: '#3A35A3' }, 
-  paypal: { income: '#0070ba', volume: '#003087' }, 
-  cripto: { income: '#F3BA2F', volume: '#C99400' }  
+  all: { income: '#e6ff2a', volume: '#0c4651' },
+  stripe: { income: '#635BFF', volume: '#3A35A3' },
+  paypal: { income: '#0070ba', volume: '#003087' },
+  cripto: { income: '#F3BA2F', volume: '#C99400' }
 };
 
 const chartData = [
@@ -59,9 +59,9 @@ const providerData = [
 
 // IMPORTANTE: Recibimos la prop onToggleSidebar desde App.jsx
 export default function Finance({ onToggleSidebar }) {
-  
-const [kpis, setKpis] = useState(null);
-const [loading, setLoading] = useState(true);
+
+  const [kpis, setKpis] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7d');
   const [chartView, setChartView] = useState('ingresos');
   const [selectedProvider, setSelectedProvider] = useState('all');
@@ -82,30 +82,30 @@ const [loading, setLoading] = useState(true);
     return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB', maximumFractionDigits: 0 }).format(value);
   };
   useEffect(() => {
-  const fetchKpis = async () => {
-    try {
-      setLoading(true);
+    const fetchKpis = async () => {
+      try {
+        setLoading(true);
 
-      const res = await getKpis(timeRange);
+        const res = await getKpis(timeRange);
 
-      console.log("KPIS BACKEND:", res);
+        console.log("KPIS BACKEND:", res);
 
-      setKpis(res.data);
-    } catch (error) {
-      console.error("Error cargando KPIs:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setKpis(res.data);
+      } catch (error) {
+        console.error("Error cargando KPIs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchKpis();
-}, [timeRange]);
+    fetchKpis();
+  }, [timeRange]);
   const activeIncomeColor = brandColors[selectedProvider].income;
   const activeVolumeColor = brandColors[selectedProvider].volume;
   const activeChartColor = chartView === 'ingresos' ? activeIncomeColor : activeVolumeColor;
-  
+
   const currentKPIs = kpis
-  ? {
+    ? {
       volumen: kpis.volumenProcesado?.valor || 0,
       transacciones: kpis.pagosExitosos?.valor || 0,
       ticket: kpis.ticketPromedio?.valor || 0,
@@ -113,7 +113,7 @@ const [loading, setLoading] = useState(true);
       txnCrec: kpis.pagosExitosos?.crecimientoPorcentaje || 0,
       tkCrec: kpis.ticketPromedio?.crecimientoPorcentaje || 0
     }
-  : {
+    : {
       volumen: 0,
       transacciones: 0,
       ticket: 0,
@@ -123,12 +123,12 @@ const [loading, setLoading] = useState(true);
     };
   const activeDataKey = `${selectedProvider}_${chartView}`;
   if (loading) {
-  return (
-    <div className="text-white flex justify-center items-center h-screen">
-      Cargando métricas...
-    </div>
-  );
-}
+    return (
+      <div className="text-white flex justify-center items-center h-screen">
+        Cargando métricas...
+      </div>
+    );
+  }
 
   // --- EXPORTACIÓN ---
   const exportToExcel = async () => {
@@ -174,7 +174,7 @@ const [loading, setLoading] = useState(true);
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.text('Reporte Financiero', 14, 20);
-    doc.setTextColor(230, 255, 42); 
+    doc.setTextColor(230, 255, 42);
     doc.setFontSize(12);
     doc.text('FrogPay SaaS', 14, 28);
     doc.setTextColor(0, 0, 0);
@@ -183,8 +183,8 @@ const [loading, setLoading] = useState(true);
 
     const tableColumn = ["Fecha", "Ingresos (Bs)", "Transacciones"];
     const tableRows = chartData.map(data => [
-      data.fecha, 
-      formatCurrency(data[`${selectedProvider}_ingresos`]), 
+      data.fecha,
+      formatCurrency(data[`${selectedProvider}_ingresos`]),
       data[`${selectedProvider}_transacciones`].toString()
     ]);
 
@@ -220,7 +220,7 @@ const [loading, setLoading] = useState(true);
 
   return (
     <div className="relative min-h-[calc(100vh-2rem)] w-full overflow-hidden p-4 sm:p-6 lg:p-8">
-      
+
       {/* HEADER MÓVIL (Con botón Hamburguesa para el Sidebar) */}
       <div className="flex items-center justify-between lg:hidden mb-6 bg-white/[0.02] border border-white/5 p-4 rounded-2xl backdrop-blur-xl">
         <div className="flex items-center gap-2">
@@ -231,7 +231,7 @@ const [loading, setLoading] = useState(true);
             Frog<span className="text-[#e6ff2a]">Pay</span>
           </span>
         </div>
-        <button 
+        <button
           onClick={onToggleSidebar}
           className="p-2 bg-white/5 rounded-xl border border-white/10 text-white transition-colors hover:bg-white/10 focus:outline-none"
         >
@@ -240,7 +240,7 @@ const [loading, setLoading] = useState(true);
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl space-y-6 sm:space-y-8">
-        
+
         {/* ENCABEZADO DE SECCIÓN */}
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between animate-fade-in">
           <div className="transition-all duration-500 transform">
@@ -254,14 +254,13 @@ const [loading, setLoading] = useState(true);
               Rendimiento {selectedProvider === 'all' ? 'General' : providerData.find(p => p.id === selectedProvider).nombre}
             </h1>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center rounded-2xl border border-white/10 bg-white/[0.02] p-1 backdrop-blur-md shadow-lg">
               {['24h', '7d', '30d'].map((range) => (
                 <button key={range} onClick={() => setTimeRange(range)}
-                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none ${
-                    timeRange === range ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`}
+                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-300 focus:outline-none ${timeRange === range ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
                 >
                   {range}
                 </button>
@@ -300,7 +299,7 @@ const [loading, setLoading] = useState(true);
               <div className="mt-3 flex flex-wrap items-baseline gap-3">
                 <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">{formatCurrency(currentKPIs.volumen)}</h2>
                 <span className={`flex items-center text-sm font-bold border px-2.5 py-1 rounded-full ${currentKPIs.volCrec >= 0 ? 'text-[#e6ff2a] bg-[#e6ff2a]/10 border-[#e6ff2a]/20' : 'text-red-400 bg-red-400/10 border-red-400/20'}`}>
-                  {currentKPIs.volCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />} 
+                  {currentKPIs.volCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />}
                   {Math.abs(currentKPIs.volCrec)}%
                 </span>
               </div>
@@ -316,7 +315,7 @@ const [loading, setLoading] = useState(true);
               <div className="mt-3 flex flex-wrap items-baseline gap-3">
                 <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">{currentKPIs.transacciones}</h2>
                 <span className={`flex items-center text-sm font-bold border px-2.5 py-1 rounded-full ${currentKPIs.txnCrec >= 0 ? 'text-[#e6ff2a] bg-[#e6ff2a]/10 border-[#e6ff2a]/20' : 'text-red-400 bg-red-400/10 border-red-400/20'}`}>
-                  {currentKPIs.txnCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />} 
+                  {currentKPIs.txnCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />}
                   {Math.abs(currentKPIs.txnCrec)}%
                 </span>
               </div>
@@ -331,10 +330,10 @@ const [loading, setLoading] = useState(true);
               <p className="text-sm font-medium text-gray-400">Ticket Promedio</p>
               <div className="mt-3 flex flex-wrap items-baseline gap-3">
                 <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
-  {formatCurrency(currentKPIs.ticket)}
-</h2>
+                  {formatCurrency(currentKPIs.ticket)}
+                </h2>
                 <span className={`flex items-center text-sm font-bold border px-2.5 py-1 rounded-full ${currentKPIs.tkCrec >= 0 ? 'text-blue-400 bg-blue-400/10 border-blue-400/20' : 'text-red-400 bg-red-400/10 border-red-400/20'}`}>
-                  {currentKPIs.tkCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />} 
+                  {currentKPIs.tkCrec >= 0 ? <ArrowUpRight size={14} className="mr-1 stroke-[3]" /> : <ArrowDownRight size={14} className="mr-1 stroke-[3]" />}
                   {Math.abs(currentKPIs.tkCrec)}%
                 </span>
               </div>
@@ -344,7 +343,7 @@ const [loading, setLoading] = useState(true);
 
         {/* CHARTS ROW */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          
+
           {/* Main Chart */}
           <div className="col-span-1 lg:col-span-2 rounded-3xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 backdrop-blur-xl flex flex-col transition-all duration-500 hover:border-white/10 hover:shadow-[0_10px_50px_rgba(0,0,0,0.2)] w-full overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
@@ -362,28 +361,28 @@ const [loading, setLoading] = useState(true);
                 </button>
               </div>
             </div>
-            
+
             {/* Altura mínima añadida aquí para resolver problemas en móviles */}
             <div className="w-full min-h-[300px] sm:min-h-[350px] mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorDynamic" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={activeChartColor} stopOpacity={0.6}/>
-                      <stop offset="95%" stopColor={activeChartColor} stopOpacity={0}/>
+                      <stop offset="5%" stopColor={activeChartColor} stopOpacity={0.6} />
+                      <stop offset="95%" stopColor={activeChartColor} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                   <XAxis dataKey="fecha" stroke="#ffffff40" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                  <YAxis stroke="#ffffff40" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => chartView === 'ingresos' ? `Bs${val/1000}k` : val} />
+                  <YAxis stroke="#ffffff40" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => chartView === 'ingresos' ? `Bs${val / 1000}k` : val} />
                   <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#ffffff10', strokeWidth: 2 }} />
-                  <Area 
-                    type="monotone" 
-                    dataKey={activeDataKey} 
-                    stroke={activeChartColor} 
-                    strokeWidth={4} 
-                    fillOpacity={1} 
-                    fill="url(#colorDynamic)" 
+                  <Area
+                    type="monotone"
+                    dataKey={activeDataKey}
+                    stroke={activeChartColor}
+                    strokeWidth={4}
+                    fillOpacity={1}
+                    fill="url(#colorDynamic)"
                     isAnimationActive={true}
                     animationDuration={1500}
                     style={{ filter: `drop-shadow(0 4px 15px ${activeChartColor}30)` }}
@@ -395,9 +394,9 @@ const [loading, setLoading] = useState(true);
 
           {/* Selector interactivo de Origen de Fondos */}
           <div className="col-span-1 rounded-3xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 backdrop-blur-xl flex flex-col relative transition-all duration-500 hover:border-white/10 hover:shadow-[0_10px_50px_rgba(0,0,0,0.2)] w-full">
-            
+
             {selectedProvider !== 'all' && (
-              <button 
+              <button
                 onClick={() => setSelectedProvider('all')}
                 className="absolute top-6 right-6 flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all animate-fade-in focus:outline-none"
               >
@@ -406,33 +405,33 @@ const [loading, setLoading] = useState(true);
             )}
 
             <h3 className="text-xl font-bold text-white tracking-tight mb-8">Origen de Fondos</h3>
-            
+
             {/* Altura mínima ajustada para gráficos de barra */}
             <div className="w-full min-h-[250px] sm:h-[200px] mt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={providerData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <XAxis type="number" hide />
                   <YAxis dataKey="nombre" type="category" hide />
-                  <RechartsTooltip cursor={false} contentStyle={{display: 'none'}} />
-                  <Bar 
-                    dataKey="valor" 
-                    radius={[0, 6, 6, 0]} 
-                    barSize={28} 
-                    onClick={(data) => setSelectedProvider(data.id)} 
+                  <RechartsTooltip cursor={false} contentStyle={{ display: 'none' }} />
+                  <Bar
+                    dataKey="valor"
+                    radius={[0, 6, 6, 0]}
+                    barSize={28}
+                    onClick={(data) => setSelectedProvider(data.id)}
                     className="cursor-pointer outline-none focus:outline-none" // Elimina bordes focus
                     activeBar={false} // Desactiva por completo el hover styling automático de recharts que causaba el borde
                   >
                     {providerData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.color} 
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
                         stroke="none"
                         className="outline-none focus:outline-none"
-                        style={{ 
+                        style={{
                           outline: 'none',
                           transition: 'opacity 0.4s ease',
-                          opacity: selectedProvider === 'all' || selectedProvider === entry.id ? 1 : 0.15 
-                        }} 
+                          opacity: selectedProvider === 'all' || selectedProvider === entry.id ? 1 : 0.15
+                        }}
                       />
                     ))}
                   </Bar>
@@ -445,22 +444,21 @@ const [loading, setLoading] = useState(true);
               {providerData.map((item) => {
                 const IconComponent = item.Icon;
                 const isSelected = selectedProvider === 'all' || selectedProvider === item.id;
-                
+
                 return (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     onClick={() => setSelectedProvider(selectedProvider === item.id ? 'all' : item.id)}
-                    className={`flex items-center justify-between group cursor-pointer p-3 -mx-3 rounded-2xl transition-all duration-300 ${
-                      selectedProvider === item.id ? 'bg-white/10 shadow-inner' : 'hover:bg-white/5'
-                    }`}
+                    className={`flex items-center justify-between group cursor-pointer p-3 -mx-3 rounded-2xl transition-all duration-300 ${selectedProvider === item.id ? 'bg-white/10 shadow-inner' : 'hover:bg-white/5'
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       {/* LOGO DE MARCA CON COLORES REALES */}
-                      <div 
-                        className="w-8 h-8 rounded-xl shadow-md flex items-center justify-center transition-transform duration-500 group-hover:scale-110" 
+                      <div
+                        className="w-8 h-8 rounded-xl shadow-md flex items-center justify-center transition-transform duration-500 group-hover:scale-110"
                         style={{ backgroundColor: item.color, color: item.id === 'cripto' || item.id === 'all' ? '#000' : '#fff' }}
                       >
-                         <IconComponent />
+                        <IconComponent />
                       </div>
                       <span className={`text-sm font-bold transition-colors ${isSelected ? 'text-gray-200' : 'text-gray-600'}`}>
                         {item.nombre}
