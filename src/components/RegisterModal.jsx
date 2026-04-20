@@ -4,6 +4,7 @@ import LiquidGradient from '../assets/LiquidGradientV2.png';
 import { X, Eye, EyeOff, ArrowRight, AlertTriangle, Check, XCircle } from 'lucide-react';
 import { registerTenant } from '../services/auth.service';
 import Toast from './Toast.jsx';
+
 // --- Componente Interno para el Tooltip Glass ---
 const CustomGlassTooltip = ({ message }) => {
   if (!message) return null;
@@ -62,79 +63,90 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin, onAuth
 
   if (!isOpen) return null;
 
- const handleSubmit = async (event) => {
-  event.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  let newErrors = { companyName: '', email: '', password: '' };
-  let hasError = false;
+    let newErrors = { companyName: '', email: '', password: '' };
+    let hasError = false;
 
-  if (!companyName.trim()) {
-    newErrors.companyName = 'Ingresa el nombre de tu empresa.';
-    hasError = true;
-  }
+    if (!companyName.trim()) {
+      newErrors.companyName = 'Ingresa el nombre de tu empresa.';
+      hasError = true;
+    }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email.trim()) {
-    newErrors.email = 'Ingresa tu correo.';
-    hasError = true;
-  } else if (!emailRegex.test(email)) {
-    newErrors.email = 'Correo inválido.';
-    hasError = true;
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      newErrors.email = 'Ingresa tu correo.';
+      hasError = true;
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = 'Correo inválido.';
+      hasError = true;
+    }
 
-  if (!password.trim() || !isPasswordValid) {
-    newErrors.password = 'Contraseña inválida.';
-    hasError = true;
-  }
+    if (!password.trim() || !isPasswordValid) {
+      newErrors.password = 'Contraseña inválida.';
+      hasError = true;
+    }
 
-  setErrors(newErrors);
+    setErrors(newErrors);
 
-  if (hasError || !acceptTerms) return;
+    if (hasError || !acceptTerms) return;
 
-  try {
-    const res = await registerTenant({
-      nombre_empresa: companyName,
-      correo_empresa: email,
-      password_admin: password
-    });
+    try {
+      const res = await registerTenant({
+        nombre_empresa: companyName,
+        correo_empresa: email,
+        password_admin: password
+      });
 
-    setToast({ show: true, message: 'Empresa registrada correctamente', type: 'success' });
-    setTimeout(() => {
-      if (onAuthSuccess) onAuthSuccess();
-      onClose();
-    }, 500);
+      setToast({ show: true, message: 'Empresa registrada correctamente', type: 'success' });
+      setTimeout(() => {
+        if (onAuthSuccess) onAuthSuccess();
+        onClose();
+      }, 500);
 
-  } catch (error) {
-    setToast({ show: true, message: error.message || 'Error al registrar la empresa', type: 'error' });
-  }
-};
+    } catch (error) {
+      setToast({ show: true, message: error.message || 'Error al registrar la empresa', type: 'error' });
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-5xl rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/70 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-fade-in-up" style={{ animationDuration: '0.3s' }}>
+    // 1. Reducimos un poco el padding en el overlay para pantallas muy pequeñas (p-3)
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm">
+      
+      {/* 2. CONTENEDOR PRINCIPAL: Agregamos max-h-[95dvh] y overflow-y-auto para que haga scroll si no cabe en la pantalla */}
+      <div 
+        className="relative w-full max-w-5xl max-h-[95dvh] overflow-y-auto rounded-[2rem] sm:rounded-[2.5rem] border border-white/10 bg-black/70 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-fade-in-up" 
+        style={{ animationDuration: '0.3s' }}
+      >
         
+        {/* Botón de Cerrar: Ajustado el top/right en mobile y agregado bg-black/40 por si queda sobre la imagen al hacer scroll */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-6 right-6 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-black/40 sm:bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20"
         >
           <X size={20} />
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-0 lg:gap-6">
-          {/* Lado Izquierdo */}
-          <div className="relative overflow-hidden rounded-[2rem]">
+          
+          {/* Lado Izquierdo - Imagen */}
+          <div className="relative overflow-hidden lg:rounded-[2rem]">
             <img src={LiquidGradient} alt="Liquid gradient" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
-            <div className="relative h-full min-h-[420px]" />
+            {/* 3. IMAGEN RESPONSIVE: Altura de 140px en mobile, 420px en desktop */}
+            <div className="relative h-[140px] sm:h-[200px] lg:h-full lg:min-h-[420px]" />
           </div>
 
           {/* Lado Derecho - Formulario de Registro */}
-          <div className="relative z-10 p-6 sm:p-8 lg:p-14 flex flex-col justify-between gap-6">
+          {/* 4. Quitamos el max-h-[80vh] y el overflow-y-auto de aquí. Ahora el scroll lo maneja el modal entero. */}
+          <div className="relative z-10 p-5 sm:p-8 lg:p-14 flex flex-col justify-between gap-6">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-[#b7f758]">
                 Empieza Gratis
               </span>
-              <h2 className="mt-5 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
+              <h2 className="mt-4 sm:mt-5 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
                 Registra tu empresa en FrogPay.
               </h2>
             </div>
@@ -233,18 +245,17 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin, onAuth
               </div>
 
               {/* Footer del formulario */}
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between mt-2">
-                <div className="text-sm text-gray-400">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between mt-2">
+                <div className="text-sm text-gray-400 text-center sm:text-left">
                   ¿Ya tienes cuenta?{' '}
                   <button type="button" onClick={onSwitchToLogin} className="text-white font-medium hover:text-[#e6ff2a] transition">
                     Inicia sesión
                   </button>
                 </div>
                 
-                {/* --- BOTÓN MEJORADO: Más padding (px-10 py-4), mejor transición --- */}
                 <MagneticButton 
                   disabled={!acceptTerms}
-                  className={`group inline-flex w-full sm:w-auto items-center justify-center gap-3 rounded-full px-8 sm:px-10 py-3 sm:py-4 text-sm sm:text-[15px] font-bold transition-all duration-300 whitespace-nowrap
+                  className={`group inline-flex w-full sm:w-auto items-center justify-center gap-3 rounded-full px-8 sm:px-10 py-3.5 sm:py-4 text-sm sm:text-[15px] font-bold transition-all duration-300 whitespace-nowrap
                     ${acceptTerms 
                       ? 'bg-[#e6ff2a] text-[#04181C] shadow-[0_10px_30px_rgba(230,255,42,0.2)] hover:shadow-[0_15px_40px_rgba(230,255,42,0.35)] hover:scale-[1.02]' 
                       : 'bg-white/10 text-gray-500 cursor-not-allowed border border-white/5'}
