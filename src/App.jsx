@@ -168,6 +168,11 @@ function App() {
       />
 
       <Route
+        path="/dashboard/configuracion"
+        element={<Navigate to="/dashboard/cuentas-cobro" replace />}
+      />
+
+      <Route
         path="/dashboard/transacciones"
         element={<Navigate to="/dashboard/cuentas-cobro" replace />}
       />

@@ -4,7 +4,7 @@ import Toast from './Toast';
 import { getStoredApiKey } from '../services/tenantKey.js';
 
 // Formulario conectado con backend de Chris (HU-2.04)
-export default function CheckoutForm({ amount = "50.00", provider = "mock", webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
+export default function CheckoutForm({ amount = "50.00", provider = "mock", currency = 'USD', webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
   const resolvedBackendUrl = backendUrl || import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
   const resolvedApiKey = apiKey || getStoredApiKey();
   

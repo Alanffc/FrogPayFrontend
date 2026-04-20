@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Building2, Wallet, CreditCard, Save, Loader2, AlertTriangle, CheckCircle2, Menu } from 'lucide-react';
 import Toast from '../components/Toast.jsx';
 import { getProviderAccounts, saveProviderAccount } from '../services/providerAccounts.service.js';
+import { getCurrencyConfig, saveCurrencyConfig } from '../services/currency.service.js';
 
 const defaultPayPal = {
   displayName: '',
@@ -40,9 +41,16 @@ export default function PayoutAccounts({ onToggleSidebar }) {
   const [loading, setLoading] = useState(true);
   const [savingPayPal, setSavingPayPal] = useState(false);
   const [savingCard, setSavingCard] = useState(false);
+  const [savingCurrency, setSavingCurrency] = useState(false);
 
   const [paypal, setPayPal] = useState(defaultPayPal);
   const [card, setCard] = useState(defaultCard);
+  const [currencyConfig, setCurrencyConfig] = useState({
+    baseCurrency: 'USD',
+    selectedCurrency: 'USD',
+    exchangeRateTimestamp: null,
+    supportedCurrencies: [],
+  });
   const [paypalApiKey, setPayPalApiKey] = useState('');
   const [paypalSecretKey, setPayPalSecretKey] = useState('');
   const [cardApiKey, setCardApiKey] = useState('');
@@ -60,20 +68,41 @@ export default function PayoutAccounts({ onToggleSidebar }) {
       setLoading(true);
       setError('');
       try {
-        const response = await getProviderAccounts();
-        const rows = Array.isArray(response?.data) ? response.data : [];
+        const [providerResult, currencyResult] = await Promise.allSettled([
+          getProviderAccounts(),
+          getCurrencyConfig(),
+        ]);
 
-        const paypalRow = rows.find((row) => row.provider === 'paypal_mock');
-        const cardRow = rows.find((row) => row.provider === 'card_simulated');
+        if (providerResult.status === 'fulfilled') {
+          const rows = Array.isArray(providerResult.value?.data) ? providerResult.value.data : [];
 
-        if (paypalRow?.configuracion) {
-          setPayPal({ ...defaultPayPal, ...paypalRow.configuracion });
-          setPayPalActive(paypalRow.activo !== false);
+          const paypalRow = rows.find((row) => row.provider === 'paypal_mock');
+          const cardRow = rows.find((row) => row.provider === 'card_simulated');
+
+          if (paypalRow?.configuracion) {
+            setPayPal({ ...defaultPayPal, ...paypalRow.configuracion });
+            setPayPalActive(paypalRow.activo !== false);
+          }
+
+          if (cardRow?.configuracion) {
+            setCard({ ...defaultCard, ...cardRow.configuracion });
+            setCardActive(cardRow.activo !== false);
+          }
         }
 
-        if (cardRow?.configuracion) {
-          setCard({ ...defaultCard, ...cardRow.configuracion });
-          setCardActive(cardRow.activo !== false);
+        if (currencyResult.status === 'fulfilled') {
+          setCurrencyConfig({
+            baseCurrency: currencyResult.value?.data?.baseCurrency || 'USD',
+            selectedCurrency: currencyResult.value?.data?.selectedCurrency || 'USD',
+            exchangeRateTimestamp: currencyResult.value?.data?.exchangeRateTimestamp || null,
+            supportedCurrencies: Array.isArray(currencyResult.value?.data?.supportedCurrencies)
+              ? currencyResult.value.data.supportedCurrencies
+              : [],
+          });
+        }
+
+        if (providerResult.status === 'rejected' && currencyResult.status === 'rejected') {
+          throw providerResult.reason || currencyResult.reason;
         }
       } catch (fetchError) {
         setError(fetchError.message || 'No se pudo cargar la configuración de cuentas de cobro');
@@ -115,6 +144,30 @@ export default function PayoutAccounts({ onToggleSidebar }) {
     if (!card.statementDescriptor.trim()) return 'Ingresa el descriptor de estado de cuenta';
     if (!Array.isArray(card.acceptedBrands) || card.acceptedBrands.length === 0) return 'Selecciona al menos una marca de tarjeta';
     return '';
+  };
+
+  const handleSaveCurrency = async () => {
+    if (!currencyConfig.selectedCurrency) {
+      setToast({ show: true, message: 'Selecciona una moneda operativa', type: 'error' });
+      return;
+    }
+
+    setSavingCurrency(true);
+    try {
+      const response = await saveCurrencyConfig(currencyConfig.selectedCurrency);
+      const data = response?.data || response;
+      setCurrencyConfig({
+        baseCurrency: data.baseCurrency || 'USD',
+        selectedCurrency: data.selectedCurrency || currencyConfig.selectedCurrency,
+        exchangeRateTimestamp: data.exchangeRateTimestamp || null,
+        supportedCurrencies: Array.isArray(data.supportedCurrencies) ? data.supportedCurrencies : currencyConfig.supportedCurrencies,
+      });
+      setToast({ show: true, message: 'Moneda operativa actualizada', type: 'success' });
+    } catch (saveError) {
+      setToast({ show: true, message: saveError.message || 'No se pudo guardar la moneda operativa', type: 'error' });
+    } finally {
+      setSavingCurrency(false);
+    }
   };
 
   const handleSavePayPal = async () => {
@@ -224,10 +277,67 @@ export default function PayoutAccounts({ onToggleSidebar }) {
           </div>
         )}
 
-        <section className="grid gap-6 sm:gap-8 lg:grid-cols-2 items-start w-full">
-          {/* Tarjeta PayPal */}
-          <article className="glass-iphone rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-5 sm:p-8 space-y-6 shadow-[0_30px_60px_rgba(0,0,0,0.35)] w-full">
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-white/10">
+        <article className="glass-iphone rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-7 space-y-6 shadow-[0_30px_60px_rgba(0,0,0,0.35)] mb-8">
+          <div className="flex items-start justify-between gap-4 pb-5 border-b border-white/10">
+            <div>
+              <h2 className="text-xl font-black text-white flex items-center gap-2"><Building2 size={18} className="text-[#e6ff2a]" /> Moneda operativa</h2>
+              <p className="text-xs text-gray-400 mt-1 max-w-2xl">La base del procesamiento siempre será USD. Aquí eliges la moneda de entrada para tus cobros y el backend hará la conversión automática antes de enviar al proveedor.</p>
+            </div>
+            <div className="text-right text-xs text-gray-400">
+              <p className="font-semibold text-white">Base fija</p>
+              <p>{currencyConfig.baseCurrency || 'USD'}</p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr] items-end">
+            <Field label="Moneda operativa del tenant" hint="Se usará como moneda de entrada para los pagos.">
+              <select className={inputClass} value={currencyConfig.selectedCurrency} onChange={(e) => setCurrencyConfig((prev) => ({ ...prev, selectedCurrency: e.target.value }))}>
+                {(currencyConfig.supportedCurrencies || []).map((currency) => (
+                  <option key={currency.code} value={currency.code}>{currency.code} - {currency.name}</option>
+                ))}
+                {(!currencyConfig.supportedCurrencies || currencyConfig.supportedCurrencies.length === 0) && (
+                  <>
+                    <option value="USD">USD - Dólar estadounidense</option>
+                    <option value="BOB">BOB - Boliviano</option>
+                    <option value="ARS">ARS - Peso argentino</option>
+                    <option value="CLP">CLP - Peso chileno</option>
+                    <option value="COP">COP - Peso colombiano</option>
+                    <option value="PEN">PEN - Sol peruano</option>
+                    <option value="MXN">MXN - Peso mexicano</option>
+                    <option value="EUR">EUR - Euro</option>
+                  </>
+                )}
+              </select>
+            </Field>
+
+            <div className="rounded-2xl border border-white/8 bg-black/25 p-4">
+              <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">Tasa actual</p>
+              <p className="text-lg font-black text-white">
+                1 {currencyConfig.baseCurrency || 'USD'} = {Number((currencyConfig.supportedCurrencies || []).find((item) => item.code === currencyConfig.selectedCurrency)?.rate || 1).toLocaleString('es-BO', { maximumFractionDigits: 6 })} {currencyConfig.selectedCurrency || 'USD'}
+              </p>
+              <p className="text-xs text-gray-500 mt-2">
+                {currencyConfig.exchangeRateTimestamp ? `Actualizado: ${new Date(currencyConfig.exchangeRateTimestamp).toLocaleString('es-BO')}` : 'Sin actualización registrada'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {(currencyConfig.supportedCurrencies || []).slice(0, 20).map((currency) => (
+              <span key={currency.code} className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${currency.code === currencyConfig.selectedCurrency ? 'border-[#e6ff2a]/40 bg-[#e6ff2a]/10 text-[#e6ff2a]' : 'border-white/10 bg-white/5 text-gray-300'}`}>
+                {currency.code}
+                <span className="text-gray-500">1 USD = {Number(currency.rate || 1).toLocaleString('es-BO', { maximumFractionDigits: 4 })}</span>
+              </span>
+            ))}
+          </div>
+
+          <button onClick={handleSaveCurrency} disabled={savingCurrency} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#e6ff2a] text-[#04181C] py-3.5 font-black tracking-wide hover:bg-[#b7f758] disabled:opacity-40 transition-all">
+            {savingCurrency ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Guardar moneda operativa
+          </button>
+        </article>
+
+        <section className="grid gap-8 lg:grid-cols-2 items-start">
+          <article className="glass-iphone rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-7 space-y-6 shadow-[0_30px_60px_rgba(0,0,0,0.35)]">
+            <div className="flex items-start justify-between gap-4 pb-5 border-b border-white/10">
               <div>
                 <h2 className="text-xl font-black text-white flex items-center gap-2"><Wallet size={18} className="text-[#e6ff2a]" /> PayPal Mock</h2>
                 <p className="text-xs text-gray-400 mt-1 max-w-md">Simula la cuenta comercial donde recibirías fondos de billetera digital.</p>
