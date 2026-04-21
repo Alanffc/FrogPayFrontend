@@ -130,6 +130,12 @@ export default function Finance({ onToggleSidebar }) {
   const [providersData, setProvidersData] = useState([]);
   const [error, setError] = useState(null);
   const dropdownRef = useRef(null);
+  const [searchPaymentId, setSearchPaymentId] = useState('');
+const [debouncedSearchPaymentId, setDebouncedSearchPaymentId] = useState('');
+
+const [transactions, setTransactions] = useState([]);
+const [transactionsLoading, setTransactionsLoading] = useState(false);
+const [transactionsError, setTransactionsError] = useState('');
   const providerData = providersData
   .filter(p => ['card', 'paypal', 'qr'].includes(p.proveedor))
   .map(p => ({
