@@ -35,4 +35,3 @@ export const getTenantUsage = async () => {
   if (!token) throw new Error('No hay sesión activa.');
   return apiRequest('/tenants/usage', 'GET', null, token);
 };
-
