@@ -35,6 +35,19 @@ const StepIndicator = ({ step, title, icon: Icon, description }) => (
   </div>
 );
 
+const DocCodeBlock = ({ title, code }) => (
+  <div className="rounded-2xl border border-white/10 bg-[#020607] overflow-hidden">
+    {title ? (
+      <div className="px-4 py-2 border-b border-white/10 text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold">
+        {title}
+      </div>
+    ) : null}
+    <pre className="p-4 text-xs sm:text-sm text-[#e6ff2a] overflow-x-auto leading-relaxed">
+      <code>{code}</code>
+    </pre>
+  </div>
+);
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
 export default function Dashboard({ onToggleSidebar, currentPlan }) {
@@ -156,15 +169,12 @@ export default function Dashboard({ onToggleSidebar, currentPlan }) {
             Tu primera integración
           </h1>
           <p className="text-base sm:text-lg text-gray-400 max-w-2xl leading-relaxed">
-            Sigue estos 3 sencillos pasos para autenticar tu cuenta, recibir notificaciones y simular tu primer pago exitoso.
+            Guía técnica completa para integrar autenticación con API Key, crear pagos correctamente y configurar webhooks sin dudas.
           </p>
         </header>
 
-        {/* Grid Principal */}
-        <div className="grid lg:grid-cols-12 gap-8 items-start w-full">
-          
-          {/* COLUMNA IZQUIERDA: Configuración */}
-          <div className="lg:col-span-7 space-y-6 sm:space-y-8 w-full min-w-0">
+        {/* Contenido Principal Centrado */}
+        <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 w-full">
             
             {/* PASO 1 */}
             <div className="glass-iphone rounded-[2rem] border border-white/10 bg-white/[0.02] p-5 sm:p-8 w-full">
@@ -172,7 +182,7 @@ export default function Dashboard({ onToggleSidebar, currentPlan }) {
                 step="1" 
                 title="Copia tu API Key" 
                 icon={Key}
-                description="Usa esta clave en los headers de tu backend (Authorization: Bearer) para crear órdenes de pago de forma segura."
+                description="Úsala en tus llamadas servidor-a-servidor con el header x-api-key. Si usas panel interno, también puedes autenticar con JWT Bearer."
               />
               
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-white/5 bg-[#020607] p-3 sm:p-2 sm:pl-6 overflow-hidden w-full ml-0 sm:ml-11 max-w-full sm:max-w-[calc(100%-2.75rem)]">
@@ -190,6 +200,34 @@ export default function Dashboard({ onToggleSidebar, currentPlan }) {
                   </button>
                 </div>
               </div>
+
+              <div className="mt-5 ml-0 sm:ml-11 max-w-full sm:max-w-[calc(100%-2.75rem)] space-y-3">
+                <p className="text-xs sm:text-sm text-gray-400">
+                  Recomendación de seguridad: nunca expongas esta llave en frontend público. Guárdala en variables de entorno de tu backend.
+                </p>
+                <DocCodeBlock
+                  title="Ejemplo de creación de pago con x-api-key"
+                  code={`curl -X POST ${BACKEND_URL}/api/payments \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: TU_API_KEY" \\
+  -d '{
+    "monto": 150.50,
+    "moneda": "BOB",
+    "proveedor": "card",
+    "card_token": "4242424242424242",
+    "descripcion": "Compra orden #FROG-1024",
+    "idempotencyKey": "ord-FROG-1024-v1",
+    "metadata": {
+      "customer_id": "cli_001",
+      "canal": "web"
+    }
+  }'`}
+                />
+                <DocCodeBlock
+                  title="Alternativa con JWT"
+                  code={`Authorization: Bearer <token_jwt_del_login>`}
+                />
+              </div>
             </div>
 
             {/* PASO 2 */}
@@ -198,7 +236,7 @@ export default function Dashboard({ onToggleSidebar, currentPlan }) {
                 step="2" 
                 title="Configura tu Webhook" 
                 icon={Link2}
-                description="FrogPay enviará una petición POST a esta URL cuando un pago se complete. Asegúrate de que sea pública (usa servicios como Ngrok si estás en localhost)."
+                description="Registra un endpoint HTTPS para recibir eventos de estado de pago. En local usa un túnel público (ejemplo: ngrok)."
               />
               
               <div className="flex flex-col sm:flex-row gap-4 w-full ml-0 sm:ml-11 max-w-full sm:max-w-[calc(100%-2.75rem)]">
@@ -220,29 +258,83 @@ export default function Dashboard({ onToggleSidebar, currentPlan }) {
                   {isSaving ? <Loader2 className="animate-spin" /> : 'Guardar Endpoint'}
                 </button>
               </div>
-            </div>
-          </div>
 
-          {/* COLUMNA DERECHA: PASO 3 (Simulador) */}
-          <div className="lg:col-span-5 w-full">
-            <div className="rounded-[2rem] sm:rounded-[2.5rem] border border-[#e6ff2a]/30 bg-gradient-to-b from-[#0c4651]/30 to-black p-5 sm:p-8 shadow-2xl relative overflow-hidden w-full">
-              <div className="absolute top-0 right-4 sm:right-8 bg-[#e6ff2a] text-[#04181C] text-[10px] font-black px-4 py-1.5 rounded-b-lg">ENTORNO SEGURO</div>
-              
-              <StepIndicator 
-                step="3" 
-                title="Prueba el flujo" 
-                icon={Zap}
-                description={savedWebhook ? "Interactúa con el checkout. Enviaremos un evento a tu webhook configurado." : "Guarda un webhook en el paso 2 para probar la notificación completa."}
+              <div className="mt-5 ml-0 sm:ml-11 max-w-full sm:max-w-[calc(100%-2.75rem)] space-y-3">
+                <DocCodeBlock
+                  title="Qué envía el panel al guardar webhook"
+                  code={`PUT ${BACKEND_URL}/api/webhooks
+Authorization: Bearer <token_jwt_del_login>
+Content-Type: application/json
+
+{
+  "url": "https://tu-api.com/webhook/frogpay",
+  "evento": "payment.completed",
+  "activo": true
+}`}
+                />
+                <DocCodeBlock
+                  title="Payload que recibes en tu endpoint"
+                  code={`{
+  "event": "pago.completed",
+  "data": {
+    "payment_id": "3f53ab0a-90f5-4bf9-b593-6a6f2f104fc2",
+    "status": "COMPLETED",
+    "amount": 150.5,
+    "currency": "USD",
+    "occurred_at": "2026-04-21T18:45:10.000Z"
+  }
+}`}
+                />
+              </div>
+            </div>
+
+            {/* PASO 3 */}
+            <div className="glass-iphone rounded-[2rem] border border-white/10 bg-white/[0.02] p-5 sm:p-8 w-full">
+              <StepIndicator
+                step="3"
+                title="Campos obligatorios y respuesta esperada"
+                icon={Terminal}
+                description="Esto es lo mínimo que debes mandar para crear pagos y cómo validar la respuesta para actualizar tu negocio."
               />
-              
-              <div className="mt-6">
-                <CheckoutForm amount="50.00" webhookUrl={savedWebhook} backendUrl={BACKEND_URL} apiKey={fullApiKey} />
+
+              <div className="ml-0 sm:ml-11 max-w-full sm:max-w-[calc(100%-2.75rem)] space-y-4">
+                <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                  <p className="text-sm font-semibold text-white mb-2">Campos requeridos al crear pago</p>
+                  <ul className="text-xs sm:text-sm text-gray-300 space-y-1.5">
+                    <li>monto o amount: número mayor a 0</li>
+                    <li>moneda o currency: código habilitado (ej. BOB, USD)</li>
+                    <li>proveedor o provider: card, paypal, qr</li>
+                  </ul>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                  <p className="text-sm font-semibold text-white mb-2">Campos recomendados</p>
+                  <ul className="text-xs sm:text-sm text-gray-300 space-y-1.5">
+                    <li>idempotencyKey para evitar cobros duplicados</li>
+                    <li>descripcion para conciliación y soporte</li>
+                    <li>metadata para referencia interna de cliente/orden</li>
+                  </ul>
+                </div>
+
+                <DocCodeBlock
+                  title="Respuesta típica de /api/payments"
+                  code={`{
+  "payment_id": "a9f5f4b1-5df6-4f7e-9ef1-9ef5f8e2d111",
+  "estado": "COMPLETED",
+  "proveedor": "card",
+  "id_transaccion_proveedor": "txn_123",
+  "mensaje": "Pago procesado",
+  "original_amount": 150.5,
+  "original_currency": "BOB",
+  "exchange_rate": 0.144,
+  "converted_amount": 21.67,
+  "base_currency": "USD"
+}`}
+                />
               </div>
             </div>
           </div>
-
         </div>
-      </div>
 
       <Toast isVisible={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
     </div>

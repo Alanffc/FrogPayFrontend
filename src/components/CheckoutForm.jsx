@@ -4,7 +4,7 @@ import Toast from './Toast';
 import { getStoredApiKey } from '../services/tenantKey.js';
 
 // Formulario conectado con backend de Chris (HU-2.04)
-export default function CheckoutForm({ amount = "50.00", provider = "mock", currency = 'USD', webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
+export default function CheckoutForm({ amount = "50.00", provider = "card", currency = 'USD', webhookUrl, backendUrl = "http://localhost:3000", apiKey }) {
   const resolvedBackendUrl = backendUrl || import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
   const resolvedApiKey = apiKey || getStoredApiKey();
   
@@ -74,6 +74,7 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", curr
         currency: selectedCurrency,
         idempotencyKey,
         description: `Demo de pago con ${provider} desde FrogPay Dashboard`,
+        ...(provider === 'card' ? { card_token: '4242424242424242' } : {}),
       }),
     });
 
@@ -123,7 +124,7 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", curr
         <div className={`transition-all duration-300 ${isSuccess ? 'scale-95 opacity-50' : 'scale-100 opacity-100'}`}>
           <label className="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
             <Lock size={14} className="text-[#e6ff2a] shrink-0" />
-            Checkout {provider === 'mock' ? 'Simulado' : 'PayPal'}
+            Checkout {provider === 'card' ? 'Tarjeta' : 'PayPal'}
           </label>
 
           {/* Selector de moneda */}
@@ -161,10 +162,10 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", curr
           )}
 
           <div className="rounded-2xl border border-white/10 bg-[#020607] px-4 py-5 text-sm text-gray-300">
-            {provider === 'mock' ? (
+            {provider === 'card' ? (
               <>
-                <p className="font-semibold text-white mb-1">Pago simulado (Mock)</p>
-                <p>Simula un cobro real sin credenciales externas. Ideal para pruebas.</p>
+                <p className="font-semibold text-white mb-1">Pago con tarjeta</p>
+                <p>Procesa un cobro con tarjeta usando tu API Key y confirmación en backend.</p>
               </>
             ) : (
               <>
@@ -202,7 +203,7 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", curr
               <Loader2 className="animate-spin" size={20} /> Procesando...
             </>
           ) : (
-            `Pagar ${amount} ${selectedCurrency} con ${provider === 'mock' ? 'Simulador' : 'PayPal'}`
+            `Pagar ${amount} ${selectedCurrency} con ${provider === 'card' ? 'Tarjeta' : 'PayPal'}`
           )}
         </button>
       </form>

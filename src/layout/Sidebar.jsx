@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 /* Eliminamos 'Users' de lucide-react */
-import { Home, CreditCard, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut, Crown, Sparkles } from 'lucide-react';
+import { Home, CreditCard, Settings, X, TrendingUp, FlaskConical, LogOut, Crown, Sparkles } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 
@@ -9,7 +9,6 @@ const navItems = [
   { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
   { id: 'finanzas', label: 'Finanzas', icon: TrendingUp, path: '/dashboard/finanzas' },
   { id: 'cuentas-cobro', label: 'Cuentas de Cobro', icon: CreditCard, path: '/dashboard/cuentas-cobro' },
-  { id: 'api', label: 'API & Webhooks', icon: Terminal, path: '/dashboard/api-keys' },
   { id: 'configuracion', label: 'Configuración', icon: Settings, path: '/dashboard/configuracion' },
 ];
 
