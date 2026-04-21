@@ -2,18 +2,30 @@
  * Página de selección de plan. Orquesta los componentes de plan
  * sin contener lógica de presentación interna.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, Menu } from 'lucide-react';
 
 import Toast from '../components/Toast.jsx';
 import { FreemiumCard, PremiumCard } from '../components/PlanCard.jsx';
 import PlanComparisonTable from '../components/PlanComparisonTable.jsx';
+import { getTenantUsage } from '../services/tenant.service.js';
 
 export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowngrade }) {
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [usageData, setUsageData] = useState(null);
 
   const isPremium = currentPlan === 'PREMIUM';
+
+  useEffect(() => {
+    if (!isPremium) {
+      getTenantUsage()
+        .then(data => setUsageData(data))
+        .catch(err => console.error("Error fetching usage:", err));
+    } else {
+      setUsageData(null);
+    }
+  }, [isPremium, currentPlan]);
 
   const showToast = (message, type = 'success') =>
     setToast({ show: true, message, type });
@@ -23,7 +35,7 @@ export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowng
     setIsLoading(true);
     try {
       await onUpgrade();
-      showToast('¡Plan actualizado a PREMIUM exitosamente! 🎉');
+      showToast('¡Plan actualizado a PREMIUM exitosamente!');
     } catch (err) {
       showToast(err.message || 'No se pudo completar el upgrade.', 'error');
     } finally {
@@ -110,6 +122,7 @@ export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowng
             isActive={!isPremium}
             isLoading={isLoading}
             onDowngrade={handleDowngrade}
+            usage={usageData}
           />
           <PremiumCard
             isActive={isPremium}

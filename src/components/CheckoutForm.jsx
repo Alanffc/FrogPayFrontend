@@ -104,9 +104,17 @@ export default function CheckoutForm({ amount = "50.00", provider = "mock", curr
         setIsProcessing(false);
       }, 2500);
     } catch (fetchError) {
-      setErrorMessage(fetchError.message || `Error procesando el pago. Verifica conexión con ${resolvedBackendUrl}`);
+      let msg = fetchError.message || `Error procesando el pago. Verifica conexión con ${resolvedBackendUrl}`;
+      
+      // Manejo específico del límite de volumen para FREEMIUM
+      if (msg.includes('VOLUME_LIMIT_EXCEEDED')) {
+        msg = 'La tienda ha excedido su límite mensual de transacciones. Por favor, contacta con el comercio para completar tu compra.';
+      }
+
+      setErrorMessage(msg);
       setIsProcessing(false);
     }
+
   };
 
   return (

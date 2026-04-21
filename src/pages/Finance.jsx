@@ -113,16 +113,12 @@ function getTransactionDateLabel(txn) {
 export default function Finance({ onToggleSidebar }) {
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const [timeRange, setTimeRange] = useState('7d');
   const [chartView, setChartView] = useState('ingresos');
   const [selectedProvider, setSelectedProvider] = useState('all');
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
-  const [transactions, setTransactions] = useState([]);
-  const [transactionsLoading, setTransactionsLoading] = useState(false);
-  const [transactionsError, setTransactionsError] = useState('');
-  const [searchPaymentId, setSearchPaymentId] = useState('');
-  const [debouncedSearchPaymentId, setDebouncedSearchPaymentId] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
   const [pagination, setPagination] = useState({ total: 0, page: 1, total_pages: 1, limit: 20 });
 
