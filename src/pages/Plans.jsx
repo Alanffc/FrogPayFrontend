@@ -3,17 +3,22 @@
  * sin contener lógica de presentación interna.
  */
 import { useState, useEffect } from 'react';
-import { Sparkles, Menu } from 'lucide-react';
+import { Sparkles, Menu, AlertTriangle } from 'lucide-react'; // Añadido AlertTriangle
 
 import Toast from '../components/Toast.jsx';
 import { FreemiumCard, PremiumCard } from '../components/PlanCard.jsx';
 import PlanComparisonTable from '../components/PlanComparisonTable.jsx';
 import { getTenantUsage } from '../services/tenant.service.js';
+import PayPalSubscriptionModal from '../components/PayPalSubscriptionModal.jsx';
 
 export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowngrade }) {
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [usageData, setUsageData] = useState(null);
+  const [isPayPalModalOpen, setIsPayPalModalOpen] = useState(false);
+
+  // Nuevo estado para el modal de confirmación de downgrade
+  const [isDowngradeModalOpen, setIsDowngradeModalOpen] = useState(false);
 
   const isPremium = currentPlan === 'PREMIUM';
 
@@ -30,8 +35,12 @@ export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowng
   const showToast = (message, type = 'success') =>
     setToast({ show: true, message, type });
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = () => {
     if (!onUpgrade || isLoading) return;
+    setIsPayPalModalOpen(true);
+  };
+
+  const handlePaymentSuccess = async () => {
     setIsLoading(true);
     try {
       await onUpgrade();
@@ -43,8 +52,15 @@ export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowng
     }
   };
 
-  const handleDowngrade = async () => {
+  // Solo abre el modal en lugar de usar window.confirm
+  const handleDowngradeClick = () => {
     if (!onDowngrade || isLoading) return;
+    setIsDowngradeModalOpen(true);
+  };
+
+  // Esta función ejecuta el downgrade real cuando el usuario confirma en el modal
+  const executeDowngrade = async () => {
+    setIsDowngradeModalOpen(false);
     setIsLoading(true);
     try {
       await onDowngrade();
@@ -121,7 +137,7 @@ export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowng
           <FreemiumCard
             isActive={!isPremium}
             isLoading={isLoading}
-            onDowngrade={handleDowngrade}
+            onDowngrade={handleDowngradeClick} // Actualizado para abrir el modal
             usage={usageData}
           />
           <PremiumCard
@@ -136,11 +152,50 @@ export default function Plans({ onToggleSidebar, currentPlan, onUpgrade, onDowng
 
       </div>
 
+      {/* Modal de confirmación para Downgrade */}
+      {isDowngradeModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md px-4">
+          <div className="bg-[#0f0f13] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-[0_10px_40px_rgba(0,0,0,0.5)] transform transition-all">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 shrink-0">
+                <AlertTriangle className="text-red-400" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white">¿Cancelar Premium?</h3>
+            </div>
+            <p className="text-gray-400 mb-6 leading-relaxed">
+              Estás a punto de cancelar tu membresía PREMIUM. Volverás al plan FREEMIUM y perderás acceso a los beneficios exclusivos. ¿Deseas continuar?
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => setIsDowngradeModalOpen(false)}
+                disabled={isLoading}
+                className="px-4 py-2 rounded-xl text-gray-300 font-medium hover:bg-white/5 hover:text-white transition-colors focus:outline-none"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={executeDowngrade}
+                disabled={isLoading}
+                className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/30 font-bold transition-all focus:outline-none disabled:opacity-50"
+              >
+                Sí, cambiar a Freemium
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Toast
         isVisible={toast.show}
         message={toast.message}
         type={toast.type}
         onClose={() => setToast(t => ({ ...t, show: false }))}
+      />
+
+      <PayPalSubscriptionModal
+        isOpen={isPayPalModalOpen}
+        onClose={() => setIsPayPalModalOpen(false)}
+        onSuccess={handlePaymentSuccess}
       />
     </div>
   );
