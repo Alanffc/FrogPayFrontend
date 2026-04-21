@@ -22,7 +22,7 @@ function ActiveBadge({ isPremium }) {
 }
 
 /** Card del plan FREEMIUM */
-export function FreemiumCard({ isActive, isLoading, onDowngrade }) {
+export function FreemiumCard({ isActive, isLoading, onDowngrade, usage }) {
   const freemiumFeatures = PLAN_FEATURES.filter(f => f.freemium);
 
   return (
@@ -48,6 +48,28 @@ export function FreemiumCard({ isActive, isLoading, onDowngrade }) {
           <span className="text-gray-500 mb-1">/mes</span>
         </div>
       </div>
+
+      {/* Uso de transacciones (Solo visible si es el plan activo y hay data) */}
+      {isActive && usage?.data && (
+        <div className="mb-8 p-4 rounded-2xl bg-black/20 border border-white/5">
+          <div className="flex justify-between items-end mb-2">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Límite de transacciones</span>
+            <span className="text-xs font-black text-white">
+              USD {usage.data.currentVolumeUSD?.toLocaleString()} / {usage.data.limitUSD?.toLocaleString()}
+            </span>
+          </div>
+          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-1000 ${usage.data.percentageUsed > 90 ? 'bg-red-500' : 'bg-[#e6ff2a]'}`}
+              style={{ width: `${Math.min(usage.data.percentageUsed, 100)}%` }}
+            />
+          </div>
+          <p className="mt-2 text-[10px] text-gray-400">
+            {usage.data.percentageUsed}% consumido este mes
+          </p>
+        </div>
+      )}
+
 
       {/* Lista de features incluidos */}
       <ul className="space-y-3 mb-8">
@@ -82,6 +104,7 @@ export function FreemiumCard({ isActive, isLoading, onDowngrade }) {
     </div>
   );
 }
+
 
 /** Card del plan PREMIUM */
 export function PremiumCard({ isActive, isLoading, onUpgrade }) {

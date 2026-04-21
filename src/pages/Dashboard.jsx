@@ -21,7 +21,13 @@ const GlassTooltip = ({ message }) => {
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
-export default function Dashboard({ onToggleSidebar }) {
+import { useNavigate } from 'react-router-dom';
+import { Lock, Sparkles, Home as HomeIcon } from 'lucide-react';
+
+export default function Dashboard({ onToggleSidebar, currentPlan }) {
+  const isPremium = currentPlan === 'PREMIUM';
+  const navigate = useNavigate();
+
   const fullApiKey = getStoredApiKey();
   const hiddenApiKey = maskApiKey(fullApiKey) || 'Sin API Key disponible';
 
