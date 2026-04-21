@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Tienda T-Amiga de electrodomésticos para probar FrogPay." />
+    <title>T-Amiga - Demo de tienda</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="success-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,70,148,0.95); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+      <div style="background:#fff; padding:45px 35px; border-radius:24px; text-align:center; color:#333; width:90%; max-width:420px; box-shadow:0 25px 50px rgba(0,0,0,0.5); border: 2px solid #feee00;">
+        <div style="font-size:75px; margin-bottom:15px; line-height:1;">✅</div>
+        <h2 style="margin:0 0 10px; color:#004694; font-size:28px; font-weight:900;">¡Pago Exitoso!</h2>
+        <p style="margin:0 0 25px; color:#555; font-size:16px;">Tu compra se ha completado correctamente y tu pedido está en camino.</p>
+        <button id="close-successModal" style="background:linear-gradient(135deg, #feee00, #fff999); border:none; padding:16px 30px; font-weight:900; font-size:16px; border-radius:14px; cursor:pointer; color:#003473; width:100%; box-shadow:0 8px 20px rgba(254,238,0,0.3);">Volver a la tienda</button>
+      </div>
+    </div>
+    <div class="bg-orb bg-orb-one"></div>
+    <div class="bg-orb bg-orb-two"></div>
+
+    <header class="main-header" style="background: #004694; color: #fff; font-family: sans-serif;">
+      <div class="top-bar" style="border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
+        <div class="shell" style="display:flex; justify-content:space-between; padding: 5px 0;">
+          <span style="font-weight: bold;">¡Bienvenido!</span>
+          <div style="display:flex; gap:15px;">
+             <span>Localizar Tiendas</span> | <span>Rastrear Pedido</span> | <span>Cuotitas</span> | <span>📍 Santa Cruz</span>
+          </div>
+        </div>
+      </div>
+      <div class="middle-header shell" style="display:flex; justify-content:space-between; align-items:center; padding: 20px 0;">
+        <div class="logo" style="display:flex; align-items:center; gap: 5px;">
+          <div style="width:40px; height:40px; border-radius:50%; background:#feee00; display:flex; align-items:center; justify-content:center; color:#004694; font-weight:bold; font-size:20px;">☺</div>
+          <div style="line-height:1; font-weight:900; font-size:18px;">tienda<br><span style="font-size:24px; color:#fff;">amiga</span></div>
+        </div>
+        <div class="search-bar" style="flex:1; margin:0 40px;">
+          <input type="text" placeholder="Estoy buscando..." style="width:100%; border-radius:4px; border:none; padding:12px; background:#fff; color:#333; outline:none; font-size:14px;">
+        </div>
+        <div class="header-actions" style="display:flex; align-items:center; gap:25px;">
+           <div style="background:#003473; padding:5px; border-radius:5px; font-size:11px; display:flex; align-items:center; gap:5px; border: 1px solid rgba(255,255,255,0.2);">COMPRA EN <br> CUOTITAS <span style="background:#e3000f; padding:3px 6px; border-radius:3px; color:#fff; font-weight:bold;">5 MINUTOS</span></div>
+           <div style="font-size:24px;">🛍️</div>
+           <div style="display:flex; align-items:center; gap:10px;">
+             <span style="font-size:24px;">👤</span>
+             <div style="font-size:13px; line-height:1.2;">Hola!<br><strong>Inicia Sesión</strong></div>
+           </div>
+        </div>
+      </div>
+      <div class="nav-bar" style="background:#feee00; color:#003473;">
+        <div class="shell" style="display:flex; justify-content:space-between; align-items:center; padding: 12px 0; font-weight:bold; font-size:13px;">
+           <div style="display:flex; gap:25px; align-items:center;">
+             <span>☰ CATEGORÍAS ⌵</span>
+             <span>HOGAR</span><span>LÍNEA BLANCA</span><span>TECNOLOGÍA</span><span>INFANTIL</span><span style="color:#e3000f;">OFERTAS</span><span>CUOTITAS</span>
+           </div>
+           <div style="display:flex; gap:15px; align-items:center;">
+             <span>📞 77818553</span>
+             <span>💬 78061030</span>
+           </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell layout">
+      <section class="panel catalog-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Catálogo</p>
+            <h2>Productos de prueba</h2>
+          </div>
+          <div class="pill" id="cart-count">0 items</div>
+        </div>
+
+        <div id="catalog" class="catalog"></div>
+      </section>
+
+      <aside class="panel cart-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Checkout</p>
+            <h2>Carrito y pago</h2>
+          </div>
+          <button class="ghost-button" id="clear-cart" type="button">Vaciar</button>
+        </div>
+
+        <div id="cart-items" class="cart-items"></div>
+
+        <div class="totals">
+          <div>
+            <span>Subtotal</span>
+            <strong id="subtotal">$0.00</strong>
+          </div>
+          <div>
+            <span>Total</span>
+            <strong id="total">$0.00</strong>
+          </div>
+        </div>
+
+        <form id="checkout-form" class="checkout-form">
+          <div class="field-grid">
+            <label>
+              <span>Nombre</span>
+              <input name="customerName" type="text" placeholder="Ana Pérez" required />
+            </label>
+            <label>
+              <span>Email</span>
+              <input name="customerEmail" type="email" placeholder="ana@correo.com" required />
+            </label>
+          </div>
+
+
+
+          <div class="field-grid">
+            <label>
+              <span>Método de pago</span>
+              <select name="provider" id="provider-select">
+                <option value="card">Tarjeta</option>
+                <option value="paypal">PayPal</option>
+                <option value="qr">QR</option>
+                <option value="mock">Mock</option>
+              </select>
+            </label>
+            <label>
+              <span>Token de tarjeta</span>
+              <input name="cardToken" id="card-token" type="text" value="4242424242424242" autocomplete="off" />
+            </label>
+          </div>
+
+          <button class="primary-button" type="submit" id="pay-button">Pagar con FrogPay</button>
+        </form>
+
+        <div class="settings-row">
+          <label class="remember">
+            <input type="checkbox" id="remember-settings" checked />
+            Guardar settings en este navegador
+          </label>
+        </div>
+
+
+
+        <section id="paypal-section" class="result-card" style="display:none;">
+          <div class="result-head">
+            <p class="eyebrow">Pago PayPal</p>
+            <span class="status neutral">Pendiente de aprobación</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;padding:1rem 0;">
+            <p style="color:#9ca3af;font-size:0.85rem;text-align:center;">
+              Haz clic en el botón para aprobar el pago en PayPal.<br/>
+              Regresa a esta ventana una vez completado.
+            </p>
+            <a id="paypal-approve-link" href="#" target="_blank" rel="noopener noreferrer"
+               style="background:#0070ba;color:#fff;font-weight:700;padding:0.75rem 2rem;border-radius:12px;text-decoration:none;font-size:0.9rem;display:flex;align-items:center;gap:0.5rem;">
+              🅿 Aprobar pago en PayPal
+            </a>
+          </div>
+        </section>
+
+        <section id="qr-section" class="result-card" style="display:none;">
+          <div class="result-head">
+            <p class="eyebrow">Pago QR</p>
+            <span class="status neutral">Pendiente de confirmación</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;padding:1rem 0;">
+            <img id="qr-image" src="" alt="Código QR de pago" style="width:200px;height:200px;border-radius:12px;border:2px solid rgba(255,255,255,0.1);" />
+            <a id="qr-confirm-link" href="#" target="_blank" rel="noopener noreferrer" class="primary-button" style="text-decoration:none;text-align:center;display:block;">
+              Abrir página de confirmación QR
+            </a>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
