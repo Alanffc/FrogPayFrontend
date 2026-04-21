@@ -5,7 +5,7 @@ Tienda mínima para probar FrogPay de extremo a extremo.
 ## Qué prueba
 - Creación de pagos contra el backend de FrogPay.
 - Envío de `x-api-key` por tenant.
-- Flujos con `card`, `paypal` y `mock`.
+- Flujos con `card`, `paypal` y `qr`.
 - Guardado opcional de settings en el navegador.
 
 ## Cómo usar
@@ -23,4 +23,5 @@ node server.js
 ## Notas
 - Para pagos con tarjeta, el campo `card_token` usa por defecto `4242424242424242`.
 - Para PayPal, el backend debe tener credenciales configuradas.
+- Para QR, el backend debe ser accesible públicamente para abrir la URL de confirmación.
 - Si quieres probar fallos, cambia el proveedor o usa el backend con un tenant sin plan suficiente.

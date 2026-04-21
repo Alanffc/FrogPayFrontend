@@ -76,8 +76,8 @@ export default function PayoutAccounts({ onToggleSidebar }) {
         if (providerResult.status === 'fulfilled') {
           const rows = Array.isArray(providerResult.value?.data) ? providerResult.value.data : [];
 
-          const paypalRow = rows.find((row) => row.provider === 'paypal_mock');
-          const cardRow = rows.find((row) => row.provider === 'card_simulated');
+          const paypalRow = rows.find((row) => row.provider === 'paypal');
+          const cardRow = rows.find((row) => row.provider === 'card');
 
           if (paypalRow?.configuracion) {
             setPayPal({ ...defaultPayPal, ...paypalRow.configuracion });
@@ -129,7 +129,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
   };
 
   const validatePayPal = () => {
-    if (!paypal.displayName.trim()) return 'Ingresa un nombre comercial para PayPal Mock';
+    if (!paypal.displayName.trim()) return 'Ingresa un nombre comercial para PayPal';
     if (!paypal.merchantEmail.trim()) return 'Ingresa el correo del comercio';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypal.merchantEmail)) return 'Correo de comercio inválido';
     if (!paypal.merchantAccountId.trim()) return 'Ingresa el Merchant Account ID';
@@ -179,7 +179,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
 
     setSavingPayPal(true);
     try {
-      await saveProviderAccount('paypal_mock', {
+      await saveProviderAccount('paypal', {
         api_key: paypalApiKey || null,
         secret_key: paypalSecretKey || null,
         activo: paypalActive,
@@ -187,9 +187,9 @@ export default function PayoutAccounts({ onToggleSidebar }) {
           ...paypal,
         },
       });
-      setToast({ show: true, message: 'Cuenta de PayPal Mock actualizada', type: 'success' });
+      setToast({ show: true, message: 'Cuenta de PayPal actualizada', type: 'success' });
     } catch (saveError) {
-      setToast({ show: true, message: saveError.message || 'No se pudo guardar PayPal Mock', type: 'error' });
+      setToast({ show: true, message: saveError.message || 'No se pudo guardar PayPal', type: 'error' });
     } finally {
       setSavingPayPal(false);
     }
@@ -204,7 +204,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
 
     setSavingCard(true);
     try {
-      await saveProviderAccount('card_simulated', {
+      await saveProviderAccount('card', {
         api_key: cardApiKey || null,
         secret_key: cardSecretKey || null,
         activo: cardActive,
@@ -213,9 +213,9 @@ export default function PayoutAccounts({ onToggleSidebar }) {
           settlementDelayDays: Number(card.settlementDelayDays || 2),
         },
       });
-      setToast({ show: true, message: 'Cuenta de tarjetas simuladas actualizada', type: 'success' });
+      setToast({ show: true, message: 'Cuenta de tarjetas actualizada', type: 'success' });
     } catch (saveError) {
-      setToast({ show: true, message: saveError.message || 'No se pudo guardar card_simulated', type: 'error' });
+      setToast({ show: true, message: saveError.message || 'No se pudo guardar card', type: 'error' });
     } finally {
       setSavingCard(false);
     }
@@ -267,7 +267,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-3 break-words">Configuración de recepción</h1>
           <p className="text-base sm:text-lg text-gray-400 max-w-3xl leading-relaxed">
-            Define a qué cuentas del tenant se acreditan los pagos. En este alcance usamos <strong>PayPal Mock</strong> y <strong>Card Simulada</strong>, con campos equivalentes a un onboarding real.
+            Define a qué cuentas del tenant se acreditan los pagos. Configura <strong>PayPal</strong> y <strong>Tarjetas</strong> con datos operativos para tu flujo real.
           </p>
         </header>
 
@@ -339,8 +339,8 @@ export default function PayoutAccounts({ onToggleSidebar }) {
           <article className="glass-iphone rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-7 space-y-6 shadow-[0_30px_60px_rgba(0,0,0,0.35)]">
             <div className="flex items-start justify-between gap-4 pb-5 border-b border-white/10">
               <div>
-                <h2 className="text-xl font-black text-white flex items-center gap-2"><Wallet size={18} className="text-[#e6ff2a]" /> PayPal Mock</h2>
-                <p className="text-xs text-gray-400 mt-1 max-w-md">Simula la cuenta comercial donde recibirías fondos de billetera digital.</p>
+                <h2 className="text-xl font-black text-white flex items-center gap-2"><Wallet size={18} className="text-[#e6ff2a]" /> PayPal</h2>
+                <p className="text-xs text-gray-400 mt-1 max-w-md">Configura la cuenta comercial donde recibirás fondos de billetera digital.</p>
               </div>
               <label className="text-xs text-gray-200 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 self-start sm:self-auto shrink-0">
                 <input type="checkbox" checked={paypalActive} onChange={(e) => setPayPalActive(e.target.checked)} className="accent-[#e6ff2a]" /> Activo
@@ -357,7 +357,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
                   <Field label="Correo de comercio" hint="Contacto principal para liquidaciones y avisos.">
                     <input type="email" className={inputClass} value={paypal.merchantEmail} onChange={(e) => setPayPal((prev) => ({ ...prev, merchantEmail: e.target.value }))} placeholder="payments@miempresa.com" />
                   </Field>
-                  <Field label="Merchant Account ID (mock)">
+                  <Field label="Merchant Account ID">
                     <input className={inputClass} value={paypal.merchantAccountId} onChange={(e) => setPayPal((prev) => ({ ...prev, merchantAccountId: e.target.value }))} placeholder="MERCHANT-BO-001" />
                   </Field>
                 </div>
@@ -372,7 +372,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
                       <option value="BOB">BOB</option>
                     </select>
                   </Field>
-                  <Field label="Webhook secret (simulado)">
+                  <Field label="Webhook secret">
                     <input className={inputClass} value={paypal.webhookSecret} onChange={(e) => setPayPal((prev) => ({ ...prev, webhookSecret: e.target.value }))} placeholder="whsec_xxx" />
                   </Field>
                 </div>
@@ -382,10 +382,10 @@ export default function PayoutAccounts({ onToggleSidebar }) {
                   </Field>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <Field label="Client ID sandbox (mock)">
+                  <Field label="Client ID (Credencial PayPal)" hint="De tu cuenta PayPal Developer.">
                     <input className={inputClass} value={paypalApiKey} onChange={(e) => setPayPalApiKey(e.target.value)} placeholder="sb-client-id" />
                   </Field>
-                  <Field label="Client secret sandbox (mock)">
+                  <Field label="Client Secret (Credencial PayPal)" hint="De tu cuenta PayPal Developer.">
                     <input className={inputClass} value={paypalSecretKey} onChange={(e) => setPayPalSecretKey(e.target.value)} placeholder="sb-client-secret" />
                   </Field>
                 </div>
@@ -393,16 +393,16 @@ export default function PayoutAccounts({ onToggleSidebar }) {
             </div>
 
             <button onClick={handleSavePayPal} disabled={savingPayPal} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#e6ff2a] text-[#04181C] py-3.5 font-black tracking-wide hover:bg-[#b7f758] disabled:opacity-40 transition-all">
-              {savingPayPal ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Guardar PayPal Mock
+              {savingPayPal ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Guardar PayPal
             </button>
           </article>
 
-          {/* Tarjeta Card Simulada */}
+          {/* Tarjeta */}
           <article className="glass-iphone rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-5 sm:p-8 space-y-6 shadow-[0_30px_60px_rgba(0,0,0,0.35)] w-full">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b border-white/10">
               <div>
-                <h2 className="text-xl font-black text-white flex items-center gap-2"><CreditCard size={18} className="text-[#e6ff2a]" /> Card Simulada</h2>
-                <p className="text-xs text-gray-400 mt-1 max-w-md">Configura cómo el tenant recibiría cobros de tarjetas en un escenario de integración real.</p>
+                <h2 className="text-xl font-black text-white flex items-center gap-2"><CreditCard size={18} className="text-[#e6ff2a]" /> Tarjetas</h2>
+                <p className="text-xs text-gray-400 mt-1 max-w-md">Configura cómo el tenant recibirá cobros de tarjetas en operación.</p>
               </div>
               <label className="text-xs text-gray-200 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 self-start sm:self-auto shrink-0">
                 <input type="checkbox" checked={cardActive} onChange={(e) => setCardActive(e.target.checked)} className="accent-[#e6ff2a]" /> Activo
@@ -434,7 +434,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
               </div>
 
               <div className="rounded-2xl border border-white/8 bg-black/25 p-4 sm:p-5">
-                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Procesador simulado</p>
+                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Procesador</p>
                 <div>
                   <p className="text-sm font-semibold text-gray-200 mb-2">Marcas aceptadas</p>
                   <div className="flex flex-wrap gap-3">
@@ -452,10 +452,10 @@ export default function PayoutAccounts({ onToggleSidebar }) {
                     <input type="number" min="0" max="30" className={inputClass} value={card.settlementDelayDays} onChange={(e) => setCard((prev) => ({ ...prev, settlementDelayDays: e.target.value }))} />
                   </Field>
                   <div className="grid grid-cols-1 gap-4">
-                    <Field label="Processor public key (mock)">
+                    <Field label="Processor public key">
                       <input className={inputClass} value={cardApiKey} onChange={(e) => setCardApiKey(e.target.value)} placeholder="card-pub-xxx" />
                     </Field>
-                    <Field label="Processor secret key (mock)">
+                    <Field label="Processor secret key">
                       <input className={inputClass} value={cardSecretKey} onChange={(e) => setCardSecretKey(e.target.value)} placeholder="card-sec-xxx" />
                     </Field>
                   </div>
@@ -464,7 +464,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
             </div>
 
             <button onClick={handleSaveCard} disabled={savingCard} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#e6ff2a] text-[#04181C] py-3.5 font-black tracking-wide hover:bg-[#b7f758] disabled:opacity-40 transition-all">
-              {savingCard ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Guardar Card Simulada
+              {savingCard ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />} Guardar Tarjetas
             </button>
           </article>
         </section>

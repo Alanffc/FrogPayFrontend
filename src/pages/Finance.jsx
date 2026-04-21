@@ -53,7 +53,6 @@ const providerLabelMap = {
   card: 'Tarjeta',
   paypal: 'PayPal',
   qr: 'QR',
-  mock: 'Mock',
 };
 
 function normalizeProvider(provider) {
