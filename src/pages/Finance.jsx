@@ -27,15 +27,9 @@ import {
   Search,
   ArrowUpDown,
 } from 'lucide-react';
-/*import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';*/
-import {  getDashboard, 
-  exportDashboardExcel, 
-  exportDashboardPDF,
-  getPayments, 
-  getPaymentDetail  } from '../services/finance.service';
+import { getDashboard, getPayments, getPaymentDetail } from '../services/finance.service';
+import { exportTransactionsPDF } from '../services/exportPDF.service';
+import { exportTransactionsExcel } from '../services/exportExcel.service';
 
 const PayPalIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-auto fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -300,14 +294,26 @@ export default function Finance({ onToggleSidebar }) {
     }
   };
 
-  const exportToExcel = () => {
-  exportDashboardExcel({ range: timeRange });
-  setIsExportMenuOpen(false);
-};
- const exportToPDF = () => {
-  exportDashboardPDF({ range: timeRange });
-  setIsExportMenuOpen(false);
-};
+  /* ── Wrappers de exportación ── */
+  const exportPayload = {
+    transactions,
+    kpis: currentKPIs,
+    timeRange,
+    formatCurrency,
+    getTransactionDateLabel,
+    getProviderLabel,
+    normalizeProvider,
+  };
+
+  const exportToPDF = () => {
+    setIsExportMenuOpen(false);
+    exportTransactionsPDF(exportPayload);
+  };
+
+  const exportToExcel = async () => {
+    setIsExportMenuOpen(false);
+    await exportTransactionsExcel(exportPayload);
+  };
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
