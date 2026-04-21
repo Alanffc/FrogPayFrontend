@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Home, CreditCard, Users, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut, Crown, Sparkles } from 'lucide-react';
+/* Eliminamos 'Users' de lucide-react */
+import { Home, CreditCard, Terminal, Settings, X, TrendingUp, FlaskConical, LogOut, Crown, Sparkles } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import FrogPayIsotype from '../assets/FrogPayIsotypeV2.png';
 
+/* Eliminamos el objeto 'clientes' del array navItems */
 const navItems = [
   { id: 'inicio', label: 'Inicio', icon: Home, path: '/dashboard' },
   { id: 'finanzas', label: 'Finanzas', icon: TrendingUp, path: '/dashboard/finanzas' },
   { id: 'cuentas-cobro', label: 'Cuentas de Cobro', icon: CreditCard, path: '/dashboard/cuentas-cobro' },
-  { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'api', label: 'API & Webhooks', icon: Terminal, path: '/dashboard/api-keys' },
   { id: 'configuracion', label: 'Configuración', icon: Settings, path: '/dashboard/configuracion' },
 ];
@@ -142,7 +143,6 @@ export default function Sidebar({ isOpen, onClose, onLogout, currentPlan = 'FREE
             <LogOut size={16} />
             Cerrar sesión
           </button>
-          {/* Plan toggle button */}
           <button
             type="button"
             onClick={handlePlanToggle}
