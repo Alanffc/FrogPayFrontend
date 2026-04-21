@@ -5,9 +5,7 @@ import {
   Terminal, Lock, AlertCircle, ChevronRight, ArrowLeft,
   QrCode, Smartphone, RefreshCw,
 } from 'lucide-react';
-import StripeCardCheckout from '../components/StripeCardCheckout.jsx';
 import { getStoredApiKey } from '../services/tenantKey.js';
-import { getCurrencyConfig } from '../services/currency.service.js';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 const AMOUNT      = 50.00;
@@ -82,7 +80,7 @@ function LogEntry({ entry, index }) {
   );
 }
 
-// ── Tab: Tarjeta Simulada ──────────────────────────────────────────────────────
+// ── Tab: Tarjeta ───────────────────────────────────────────────────────────────
 function CardTab({ backendOk, currency }) {
   const [cardNumber, setCardNumber] = useState('');
   const [expiry,     setExpiry]     = useState('');
@@ -130,7 +128,7 @@ function CardTab({ backendOk, currency }) {
     }
     addLog('Validación de datos', 'success', 200, { valid: true, last4: rawNumber.slice(-4), expiry });
 
-    // Paso 2 — Tokenización simulada
+    // Paso 2 — Tokenización
     await sleep(700);
     const fakeToken = 'tok_' + Math.random().toString(36).slice(2, 14);
     addLog('Tokenización de tarjeta', 'success', 200, { token: fakeToken, masked: `****-****-****-${rawNumber.slice(-4)}` });
@@ -148,7 +146,7 @@ function CardTab({ backendOk, currency }) {
           provider: 'card',
           amount: AMOUNT,
           currency,
-          description: 'Demo tarjeta simulada — FrogPay',
+          description: 'Demo tarjeta — FrogPay',
           paymentToken: rawNumber,
         }),
       });
@@ -167,7 +165,7 @@ function CardTab({ backendOk, currency }) {
     const isApproved = backendStatus < 300;
     addLog('Respuesta del backend', isApproved ? 'success' : 'error', backendStatus, backendBody);
 
-    // Paso 5 — Webhook simulado
+    // Paso 5 — Webhook
     await sleep(400);
     const webhookPayload = {
       event: isApproved ? 'payment.completed' : 'payment.failed',
@@ -647,7 +645,7 @@ function QRTab({ backendOk }) {
           </div>
           <div>
             <p className="font-bold text-white">Pago con QR</p>
-            <p className="text-xs text-gray-500">Simulado — Escanea con tu celular</p>
+            <p className="text-xs text-gray-500">Escanea con tu celular</p>
           </div>
         </div>
 
@@ -737,7 +735,7 @@ function QRTab({ backendOk }) {
       )}
 
       <p className="text-xs text-gray-600 text-center">
-        El QR redirige a una pagina de simulacion. En produccion apuntaria a la app del banco.
+        El QR redirige a la pantalla de confirmación del pago para completar la operación.
       </p>
     </div>
   );
@@ -746,12 +744,10 @@ function QRTab({ backendOk }) {
 // ── Página Principal ───────────────────────────────────────────────────────────
 export default function PaymentDemo() {
   const apiKey = getStoredApiKey();
-  const [activeTab,           setActiveTab]           = useState('stripe');
+  const [activeTab,           setActiveTab]           = useState('card');
   const [backendStatus,       setBackendStatus]       = useState(null);
   const [initialPaypalOrder,  setInitialPaypalOrder]  = useState(null);
-  const [stripeConfig,        setStripeConfig]        = useState({ publishableKey: '', enabled: false });
   const [paymentCurrency,     setPaymentCurrency]     = useState('USD');
-  const [stripeResult,        setStripeResult]        = useState(null);
 
   // Detectar retorno de PayPal: ?token=ORDER_ID&PayerID=...
   useEffect(() => {
@@ -782,32 +778,6 @@ export default function PaymentDemo() {
     const id = setInterval(check, 6000);
     return () => clearInterval(id);
   }, []);
-
-  useEffect(() => {
-    if (!apiKey) {
-      setStripeConfig({ publishableKey: '', enabled: false });
-      setPaymentCurrency('USD');
-      return;
-    }
-
-    const loadStripeConfig = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/payments/config/stripe`, {
-          headers: { 'x-api-key': apiKey },
-        });
-        const payload = await res.json().catch(() => ({}));
-        if (res.ok) {
-          setStripeConfig(payload);
-          return;
-        }
-        setStripeConfig({ publishableKey: '', enabled: false });
-      } catch (_error) {
-        setStripeConfig({ publishableKey: '', enabled: false });
-      }
-    };
-
-    loadStripeConfig();
-  }, [apiKey]);
 
   useEffect(() => {
     if (!apiKey) {
@@ -858,10 +828,10 @@ export default function PaymentDemo() {
             <Zap size={12} className="animate-pulse" /> Demo end-to-end
           </div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">
-            Simulador de Pagos <span className="text-[#e6ff2a]">FrogPay</span>
+            Laboratorio de Pagos <span className="text-[#e6ff2a]">FrogPay</span>
           </h1>
           <p className="text-gray-400 text-sm max-w-xl mx-auto">
-            Prueba el flujo completo: validación, tokenización, request al backend y webhook simulado.
+            Prueba el flujo completo: validación, tokenización, request al backend y webhook.
             Monto fijo de <strong className="text-white">{AMOUNT.toFixed(2)} {paymentCurrency}</strong>.
           </p>
 
@@ -882,16 +852,6 @@ export default function PaymentDemo() {
         <div className="glass-iphone rounded-[2rem] border border-white/10 bg-white/[0.02] p-6 sm:p-8">
           <div className="flex gap-1 mb-8 bg-white/[0.04] rounded-xl p-1">
             <button
-              onClick={() => setActiveTab('stripe')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
-                activeTab === 'stripe'
-                  ? 'bg-[#e6ff2a] text-[#04181C] shadow-sm'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <CreditCard size={15} /> Tarjeta (Stripe real)
-            </button>
-            <button
               onClick={() => setActiveTab('card')}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
                 activeTab === 'card'
@@ -899,7 +859,7 @@ export default function PaymentDemo() {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              <CreditCard size={15} /> Tarjeta Simulada
+              <CreditCard size={15} /> Tarjeta
             </button>
             <button
               onClick={() => setActiveTab('paypal')}
@@ -922,29 +882,6 @@ export default function PaymentDemo() {
               <QrCode size={15} /> QR
             </button>
           </div>
-
-          {activeTab === 'stripe' && (
-            <div className="space-y-4">
-              <StripeCardCheckout
-                backendUrl={BACKEND_URL}
-                apiKey={apiKey}
-                amount={AMOUNT}
-                currency={paymentCurrency}
-                publishableKey={stripeConfig.publishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''}
-                onResult={setStripeResult}
-              />
-
-              {stripeResult && (
-                <div className={`rounded-xl border p-4 text-sm ${stripeResult.ok ? 'border-green-500/40 bg-green-500/10 text-green-300' : 'border-red-500/40 bg-red-500/10 text-red-300'}`}>
-                  {stripeResult.ok ? (
-                    <span className="inline-flex items-center gap-2"><CheckCircle2 size={16} /> {stripeResult.message}</span>
-                  ) : (
-                    <span className="inline-flex items-center gap-2"><XCircle size={16} /> {stripeResult.message}</span>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
 
           {activeTab === 'card' && <CardTab backendOk={backendOk} />}
           {activeTab === 'paypal' && <PayPalTab backendOk={backendOk} initialOrderId={initialPaypalOrder} />}

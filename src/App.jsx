@@ -13,7 +13,6 @@ import RegisterModal from './components/RegisterModal.jsx';
 import { logout } from './services/auth.service.js';
 import { upgradePlan, downgradePlan, getTenantMe } from './services/tenant.service.js';
 
-import ApiKeys from "./pages/ApiKeys.jsx";
 import PayoutAccounts from "./pages/PayoutAccounts.jsx";
 import Finance from "./pages/Finance.jsx";
 import Plans from "./pages/Plans.jsx";
@@ -244,22 +243,8 @@ function App() {
       />
 
       <Route
-        path="/dashboard/configuracion"
-        element={<Navigate to="/dashboard/cuentas-cobro" replace />}
-      />
-
-      <Route
         path="/dashboard/transacciones"
         element={<Navigate to="/dashboard/cuentas-cobro" replace />}
-      />
-
-      <Route
-        path="/dashboard/api-keys"
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DashboardLayout Page={ApiKeys} />
-          </ProtectedRoute>
-        }
       />
 
       <Route

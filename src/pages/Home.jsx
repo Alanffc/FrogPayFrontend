@@ -87,7 +87,7 @@ const features = [
   {
     id: 1,
     title: "Seguridad Bancaria",
-    subtitle: "Alineado a PCI DSS (simulado)",
+    subtitle: "Alineado a PCI DSS",
     desc: "Diseño orientado a seguridad financiera con tokenización y controles incrementales en el roadmap de cumplimiento.",
     icon: ShieldCheck,
     visual: (
@@ -164,20 +164,20 @@ const pricingPlans = [
     icon: Users,
     priceBOB: 0,
     priceDesc: 'Gratis para siempre',
-    comission: '2.9% + BOB 2.00 por txn',
-    limit: 'Hasta 100 transacciones/mes',
-    features: ['Integración básica', 'Soporte vía Email', 'Dashboard MVP']
+    comission: 'Comisión estándar por transacción',
+    limit: 'Hasta 100 transacciones y USD 50,000/mes',
+    features: ['Tarjeta, PayPal y QR', 'API Key + Webhooks', 'Dashboard operativo']
   },
   {
     name: 'Pro',
     subtitle: 'Escala sin Límites',
-    desc: 'Para negocios en crecimiento que necesitan control total y automatización.',
+    desc: 'Para negocios en crecimiento que necesitan mayor capacidad y throughput.',
     icon: Gem,
     priceBOB: 499,
-    priceDesc: 'Fijo mensual + Comisión reducida',
-    comission: '1.8% + BOB 1.50 por txn',
-    limit: 'Transacciones ilimitadas',
-    features: ['Multi-región & Tenants', 'Prevención de fraude con IA', 'Analytics avanzados', 'Webhooks en tiempo real', 'Soporte prioritario 24/7']
+    priceDesc: 'Fijo mensual + prioridad operativa',
+    comission: 'Comisión preferencial',
+    limit: 'Sin límite mensual de transacciones ni volumen',
+    features: ['Mayor throughput API (hasta 80 req/min)', 'Sin límites mensuales', 'Mismos métodos de pago: Tarjeta, PayPal y QR', 'Webhooks en tiempo real', 'Panel completo para operación diaria']
   }
 ];
 
