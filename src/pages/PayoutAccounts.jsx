@@ -4,23 +4,8 @@ import Toast from '../components/Toast.jsx';
 import { getProviderAccounts, saveProviderAccount } from '../services/providerAccounts.service.js';
 import { getCurrencyConfig, saveCurrencyConfig } from '../services/currency.service.js';
 
-const defaultPayPal = {
-  displayName: '',
-  merchantEmail: '',
-  merchantAccountId: '',
-  settlementCurrency: 'USD',
-  webhookSecret: '',
-  callbackUrl: '',
-};
-
 const defaultCard = {
-  accountHolderName: '',
-  settlementAccountAlias: '',
-  supportEmail: '',
   statementDescriptor: '',
-  acceptedBrands: ['visa', 'mastercard'],
-  chargebackEmail: '',
-  settlementDelayDays: 2,
 };
 
 const inputClass = 'mt-2 block w-full rounded-xl border border-white/12 bg-black/35 px-3.5 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-[#e6ff2a]/70 focus:ring-2 focus:ring-[#e6ff2a]/20 transition';
@@ -43,7 +28,6 @@ export default function PayoutAccounts({ onToggleSidebar }) {
   const [savingCard, setSavingCard] = useState(false);
   const [savingCurrency, setSavingCurrency] = useState(false);
 
-  const [paypal, setPayPal] = useState(defaultPayPal);
   const [card, setCard] = useState(defaultCard);
   const [currencyConfig, setCurrencyConfig] = useState({
     baseCurrency: 'USD',
@@ -61,8 +45,6 @@ export default function PayoutAccounts({ onToggleSidebar }) {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [error, setError] = useState('');
 
-  const acceptedBrandSet = useMemo(() => new Set(card.acceptedBrands || []), [card.acceptedBrands]);
-
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -79,13 +61,18 @@ export default function PayoutAccounts({ onToggleSidebar }) {
           const paypalRow = rows.find((row) => row.provider === 'paypal');
           const cardRow = rows.find((row) => row.provider === 'card');
 
-          if (paypalRow?.configuracion) {
-            setPayPal({ ...defaultPayPal, ...paypalRow.configuracion });
+          if (paypalRow) {
+            setPayPalApiKey(paypalRow.api_key || '');
+            setPayPalSecretKey(paypalRow.secret_key || '');
             setPayPalActive(paypalRow.activo !== false);
           }
 
-          if (cardRow?.configuracion) {
-            setCard({ ...defaultCard, ...cardRow.configuracion });
+          if (cardRow) {
+            setCardApiKey(cardRow.api_key || '');
+            setCardSecretKey(cardRow.secret_key || '');
+            if (cardRow.configuracion) {
+              setCard({ ...defaultCard, ...cardRow.configuracion });
+            }
             setCardActive(cardRow.activo !== false);
           }
         }
@@ -114,35 +101,13 @@ export default function PayoutAccounts({ onToggleSidebar }) {
     load();
   }, []);
 
-  const toggleBrand = (brand) => {
-    const current = new Set(card.acceptedBrands || []);
-    if (current.has(brand)) {
-      current.delete(brand);
-    } else {
-      current.add(brand);
-    }
-
-    setCard((prev) => ({
-      ...prev,
-      acceptedBrands: Array.from(current),
-    }));
-  };
-
   const validatePayPal = () => {
-    if (!paypal.displayName.trim()) return 'Ingresa un nombre comercial para PayPal';
-    if (!paypal.merchantEmail.trim()) return 'Ingresa el correo del comercio';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypal.merchantEmail)) return 'Correo de comercio inválido';
-    if (!paypal.merchantAccountId.trim()) return 'Ingresa el Merchant Account ID';
+    if (!paypalApiKey.trim()) return 'Ingresa el Client ID de PayPal';
+    if (!paypalSecretKey.trim()) return 'Ingresa el Client Secret de PayPal';
     return '';
   };
 
   const validateCard = () => {
-    if (!card.accountHolderName.trim()) return 'Ingresa el titular de la cuenta de liquidación';
-    if (!card.settlementAccountAlias.trim()) return 'Ingresa el alias de la cuenta de liquidación';
-    if (!card.supportEmail.trim()) return 'Ingresa el correo de soporte';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(card.supportEmail)) return 'Correo de soporte inválido';
-    if (!card.statementDescriptor.trim()) return 'Ingresa el descriptor de estado de cuenta';
-    if (!Array.isArray(card.acceptedBrands) || card.acceptedBrands.length === 0) return 'Selecciona al menos una marca de tarjeta';
     return '';
   };
 
@@ -183,9 +148,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
         api_key: paypalApiKey || null,
         secret_key: paypalSecretKey || null,
         activo: paypalActive,
-        configuracion: {
-          ...paypal,
-        },
+        configuracion: {},
       });
       setToast({ show: true, message: 'Cuenta de PayPal actualizada', type: 'success' });
     } catch (saveError) {
@@ -209,8 +172,7 @@ export default function PayoutAccounts({ onToggleSidebar }) {
         secret_key: cardSecretKey || null,
         activo: cardActive,
         configuracion: {
-          ...card,
-          settlementDelayDays: Number(card.settlementDelayDays || 2),
+          statementDescriptor: card.statementDescriptor || '',
         },
       });
       setToast({ show: true, message: 'Cuenta de tarjetas actualizada', type: 'success' });
@@ -349,43 +311,12 @@ export default function PayoutAccounts({ onToggleSidebar }) {
 
             <div className="space-y-5">
               <div className="rounded-2xl border border-white/8 bg-black/25 p-4 sm:p-5">
-                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Identidad comercial</p>
-                <div className="grid gap-4">
-                  <Field label="Nombre comercial" hint="Este nombre se mostrará en tu panel operativo.">
-                    <input className={inputClass} value={paypal.displayName} onChange={(e) => setPayPal((prev) => ({ ...prev, displayName: e.target.value }))} placeholder="Frog Market Bolivia" />
-                  </Field>
-                  <Field label="Correo de comercio" hint="Contacto principal para liquidaciones y avisos.">
-                    <input type="email" className={inputClass} value={paypal.merchantEmail} onChange={(e) => setPayPal((prev) => ({ ...prev, merchantEmail: e.target.value }))} placeholder="payments@miempresa.com" />
-                  </Field>
-                  <Field label="Merchant Account ID">
-                    <input className={inputClass} value={paypal.merchantAccountId} onChange={(e) => setPayPal((prev) => ({ ...prev, merchantAccountId: e.target.value }))} placeholder="MERCHANT-BO-001" />
-                  </Field>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-white/8 bg-black/25 p-4 sm:p-5">
-                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Parámetros técnicos</p>
+                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Credenciales API</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Moneda de liquidación">
-                    <select className={inputClass} value={paypal.settlementCurrency} onChange={(e) => setPayPal((prev) => ({ ...prev, settlementCurrency: e.target.value }))}>
-                      <option value="USD">USD</option>
-                      <option value="BOB">BOB</option>
-                    </select>
-                  </Field>
-                  <Field label="Webhook secret">
-                    <input className={inputClass} value={paypal.webhookSecret} onChange={(e) => setPayPal((prev) => ({ ...prev, webhookSecret: e.target.value }))} placeholder="whsec_xxx" />
-                  </Field>
-                </div>
-                <div className="mt-4">
-                  <Field label="Callback URL (opcional)">
-                    <input type="url" className={inputClass} value={paypal.callbackUrl} onChange={(e) => setPayPal((prev) => ({ ...prev, callbackUrl: e.target.value }))} placeholder="https://mi-erp.com/paypal/callback" />
-                  </Field>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <Field label="Client ID (Credencial PayPal)" hint="De tu cuenta PayPal Developer.">
+                  <Field label="Client ID" hint="Client ID de tu aplicación PayPal.">
                     <input className={inputClass} value={paypalApiKey} onChange={(e) => setPayPalApiKey(e.target.value)} placeholder="sb-client-id" />
                   </Field>
-                  <Field label="Client Secret (Credencial PayPal)" hint="De tu cuenta PayPal Developer.">
+                  <Field label="Client Secret" hint="Client Secret de tu aplicación PayPal.">
                     <input className={inputClass} value={paypalSecretKey} onChange={(e) => setPayPalSecretKey(e.target.value)} placeholder="sb-client-secret" />
                   </Field>
                 </div>
@@ -411,54 +342,23 @@ export default function PayoutAccounts({ onToggleSidebar }) {
 
             <div className="space-y-5">
               <div className="rounded-2xl border border-white/8 bg-black/25 p-4 sm:p-5">
-                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Datos de liquidación</p>
+                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Procesamiento de Tarjetas</p>
                 <div className="grid gap-4">
-                  <Field label="Titular de la cuenta de liquidación">
-                    <input className={inputClass} value={card.accountHolderName} onChange={(e) => setCard((prev) => ({ ...prev, accountHolderName: e.target.value }))} placeholder="Mi Empresa S.R.L." />
-                  </Field>
-                  <Field label="Alias cuenta liquidación">
-                    <input className={inputClass} value={card.settlementAccountAlias} onChange={(e) => setCard((prev) => ({ ...prev, settlementAccountAlias: e.target.value }))} placeholder="BANCO-BOB-OPERACIONES" />
-                  </Field>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label="Email soporte pagos">
-                      <input type="email" className={inputClass} value={card.supportEmail} onChange={(e) => setCard((prev) => ({ ...prev, supportEmail: e.target.value }))} placeholder="soporte-pagos@miempresa.com" />
-                    </Field>
-                    <Field label="Email chargebacks (opcional)">
-                      <input type="email" className={inputClass} value={card.chargebackEmail} onChange={(e) => setCard((prev) => ({ ...prev, chargebackEmail: e.target.value }))} placeholder="risk@miempresa.com" />
-                    </Field>
-                  </div>
                   <Field label="Descriptor en estado de cuenta" hint="Máximo 22 caracteres visibles para el cliente final.">
-                    <input className={inputClass} value={card.statementDescriptor} onChange={(e) => setCard((prev) => ({ ...prev, statementDescriptor: e.target.value }))} placeholder="FROG*MIEMPRESA" maxLength={22} />
+                    <input className={inputClass} value={card.statementDescriptor} onChange={(e) => setCard((prev) => ({ ...prev, statementDescriptor: e.target.value.slice(0, 22) }))} placeholder="MIEMPRESA*PAGOS" maxLength={22} />
                   </Field>
                 </div>
               </div>
 
               <div className="rounded-2xl border border-white/8 bg-black/25 p-4 sm:p-5">
-                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Procesador</p>
-                <div>
-                  <p className="text-sm font-semibold text-gray-200 mb-2">Marcas aceptadas</p>
-                  <div className="flex flex-wrap gap-3">
-                    <label className={`text-xs inline-flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${acceptedBrandSet.has('visa') ? 'border-[#e6ff2a]/40 bg-[#e6ff2a]/10 text-[#e6ff2a]' : 'border-white/10 bg-white/5 text-gray-300'}`}>
-                      <input type="checkbox" checked={acceptedBrandSet.has('visa')} onChange={() => toggleBrand('visa')} className="accent-[#e6ff2a]" /> Visa
-                    </label>
-                    <label className={`text-xs inline-flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${acceptedBrandSet.has('mastercard') ? 'border-[#e6ff2a]/40 bg-[#e6ff2a]/10 text-[#e6ff2a]' : 'border-white/10 bg-white/5 text-gray-300'}`}>
-                      <input type="checkbox" checked={acceptedBrandSet.has('mastercard')} onChange={() => toggleBrand('mastercard')} className="accent-[#e6ff2a]" /> Mastercard
-                    </label>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
-                  <Field label="Delay liquidación (días)">
-                    <input type="number" min="0" max="30" className={inputClass} value={card.settlementDelayDays} onChange={(e) => setCard((prev) => ({ ...prev, settlementDelayDays: e.target.value }))} />
+                <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Credenciales del Procesador</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Public Key">
+                    <input className={inputClass} value={cardApiKey} onChange={(e) => setCardApiKey(e.target.value)} placeholder="pk_test_..." />
                   </Field>
-                  <div className="grid grid-cols-1 gap-4">
-                    <Field label="Processor public key">
-                      <input className={inputClass} value={cardApiKey} onChange={(e) => setCardApiKey(e.target.value)} placeholder="card-pub-xxx" />
-                    </Field>
-                    <Field label="Processor secret key">
-                      <input className={inputClass} value={cardSecretKey} onChange={(e) => setCardSecretKey(e.target.value)} placeholder="card-sec-xxx" />
-                    </Field>
-                  </div>
+                  <Field label="Secret Key">
+                    <input className={inputClass} value={cardSecretKey} onChange={(e) => setCardSecretKey(e.target.value)} placeholder="sk_test_..." />
+                  </Field>
                 </div>
               </div>
             </div>

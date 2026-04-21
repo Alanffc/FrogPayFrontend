@@ -173,11 +173,8 @@ export default function Dashboard({ onToggleSidebar, currentPlan }) {
           </p>
         </header>
 
-        {/* Grid Principal */}
-        <div className="grid lg:grid-cols-12 gap-8 items-start w-full">
-          
-          {/* COLUMNA IZQUIERDA: Configuración */}
-          <div className="lg:col-span-7 space-y-6 sm:space-y-8 w-full min-w-0">
+        {/* Contenido Principal Centrado */}
+        <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 w-full">
             
             {/* PASO 1 */}
             <div className="glass-iphone rounded-[2rem] border border-white/10 bg-white/[0.02] p-5 sm:p-8 w-full">
@@ -337,27 +334,7 @@ Content-Type: application/json
               </div>
             </div>
           </div>
-
-          {/* COLUMNA DERECHA: PASO 4 (Prueba E2E) */}
-          <div className="lg:col-span-5 w-full">
-            <div className="rounded-[2rem] sm:rounded-[2.5rem] border border-[#e6ff2a]/30 bg-gradient-to-b from-[#0c4651]/30 to-black p-5 sm:p-8 shadow-2xl relative overflow-hidden w-full">
-              <div className="absolute top-0 right-4 sm:right-8 bg-[#e6ff2a] text-[#04181C] text-[10px] font-black px-4 py-1.5 rounded-b-lg">ENTORNO SEGURO</div>
-              
-              <StepIndicator 
-                step="4" 
-                title="Prueba el flujo" 
-                icon={Zap}
-                description={savedWebhook ? "Ejecuta una compra de prueba y valida que tu endpoint reciba el evento y responda HTTP 2xx." : "Primero guarda tu webhook en el paso 2 para completar la prueba E2E."}
-              />
-              
-              <div className="mt-6">
-                <CheckoutForm amount="50.00" provider="card" webhookUrl={savedWebhook} backendUrl={BACKEND_URL} apiKey={fullApiKey} />
-              </div>
-            </div>
-          </div>
-
         </div>
-      </div>
 
       <Toast isVisible={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
     </div>
